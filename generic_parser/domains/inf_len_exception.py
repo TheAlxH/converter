@@ -1,0 +1,2 @@
+class InfLenException(Exception):
+    pass

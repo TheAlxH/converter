@@ -1,0 +1,2 @@
+class InfBoundException(Exception):
+    pass
