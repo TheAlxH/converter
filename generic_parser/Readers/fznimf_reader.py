@@ -46,24 +46,26 @@ class FZNImfReader(InputReader):
         return None
 
     def parse_line(self, line):
-        token = line[:3]
+        split = line.find(' ')
+        token = line[:split]
+        split += 1
 
-        if token == '[V]':
-            self.parse_variable(line[3:-1])
-        elif token == '[B]':
-            self.parse_variable(line[3:-1], is_bool=True)
-        elif token == '[C]':
-            self.parse_constraint(line[3:-1])
-        elif token == '[A]':
-            self.parse_alldiff(line[3:-1])
-        elif token == '[R]':
-            self.parse_reified(line[3:-1])
-        elif token == '[O]':
-            self.parse_optimization(line[3:-1])
-        elif token == '[D]':
-            self.parse_disjunction(line[3:-1])
-        elif token == '[2]':
-            self.parse_bool2int(line[3:-1])
+        if token == '[INT]':
+            self.parse_variable(line[split:-1])
+        elif token == '[BOOL]':
+            self.parse_variable(line[split:-1], is_bool=True)
+        elif token == '[CONSTRAINT]':
+            self.parse_constraint(line[split:-1])
+        elif token == '[ALLDIFFERENT]':
+            self.parse_alldiff(line[split:-1])
+        elif token == '[REIFIED]':
+            self.parse_reified(line[split:-1])
+        elif token == '[OPTIMIZATION]':
+            self.parse_optimization(line[split:-1])
+        elif token == '[DISJUNCTION]':
+            self.parse_disjunction(line[split:-1])
+        elif token == '[BOOL2INT]':
+            self.parse_bool2int(line[split:-1])
 
     def parse_variable(self, line, is_bool=False):
         if is_bool:
