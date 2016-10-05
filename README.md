@@ -64,6 +64,8 @@ Currently Supported Readers and Writers
 
 **lp**    [LP format](https://www.ibm.com/support/knowledgecenter/SS9UKU_12.5.0/com.ibm.cplex.zos.help/FileFormats/topics/LP.html)
 
+**pisinger** [1]
+
 
 
 ### Writers
@@ -75,3 +77,8 @@ Currently Supported Readers and Writers
 **Sugar** [sugar syntax](http://bach.istc.kobe-u.ac.jp/sugar/package/current/docs/syntax.html)
 
 
+
+References
+----------
+
+[1] David Pisinger. 2005. Where are the hard knapsack problems?. Comput. Oper. Res. 32, 9 (September 2005), 2271-2284.
