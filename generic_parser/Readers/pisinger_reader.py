@@ -9,8 +9,8 @@ from ..domains.continuous.continuous_domain import ContinuousDomain
 class PisingerReader(InputReader):
     strategy = 'maximize'
 
-    def __init__(self, **kwargs):
-        super(PisingerReader, self).__init__()
+    def __init__(self, **options):
+        super(PisingerReader, self).__init__(**options)
 
         self.var_table = {}
         self.offset = 0

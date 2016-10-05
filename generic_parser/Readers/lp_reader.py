@@ -53,11 +53,6 @@ def tokenize(s):
         raise RuntimeError('Unexpected character %r on line %d' % (s[pos], line))
 
 
-# default domain
-default_dom = ContinuousDomain(0, float('inf'))
-free_dom = ContinuousDomain(-float('inf'), float('inf'))
-
-
 class LPReader(InputReader):
     def __init__(self, **options):
         super(LPReader, self).__init__(**options)
@@ -65,6 +60,12 @@ class LPReader(InputReader):
         self.var_table = {}
         self.op_map = None
         self.constraints = {}
+
+        # default domain
+        self.d_lb = -float('inf') if 'lb' not in options else options['lb']
+        self.d_ub = float('inf') if 'ub' not in options else options['ub']
+        self.default_dom = ContinuousDomain(0, self.d_ub)
+        self.free_dom = ContinuousDomain(self.d_lb, self.d_ub)
 
     def set_parser(self, parser):
         super(LPReader, self).set_parser(parser)
@@ -167,13 +168,13 @@ class LPReader(InputReader):
             if token.typ == 'KEYWORD':
                 var = self.var_table[var]
                 self.parser.variables[var] = ContinuousDomain(lb if lb is not None else 0,
-                                                              ub if ub is not None else float('inf'))
+                                                              ub if ub is not None else self.d_ub)
                 self.dispatch_section(token.value)
                 return
 
             if token.line > line and var is not None:
                 var = self.var_table[var]
-                dom = ContinuousDomain(lb if lb is not None else 0, ub if ub is not None else float('inf'))
+                dom = ContinuousDomain(lb if lb is not None else 0, ub if ub is not None else self.d_ub)
                 self.parser.variables[var] = dom
                 lb = ub = var = None
 
@@ -190,12 +191,12 @@ class LPReader(InputReader):
                     lb = int(token.value)
             elif token.typ == 'CONST':
                 if token.value == 'free':
-                    lb, ub = -float('inf'), float('inf')
-                elif token.value.upper()[0:3] == 'INF':
+                    lb, ub = self.d_lb, self.d_ub
+                elif token.value.upper()[0:3] == 'INF' or token.value.upper()[0:4] == '-INF':
                     if op == '<=' and token.value[0] != '-':
-                        ub = float('inf')
+                        ub = self.d_ub
                     elif op == '>=' and token.value[0] == '-':
-                        lb = -float('inf')
+                        lb = self.d_lb
                     else:
                         raise Exception('corrupt bounds in line %d' % token.line)
             elif token.typ == 'OPERATOR':
@@ -205,7 +206,7 @@ class LPReader(InputReader):
         if kw.upper()[0:3] == 'BIN':
             dom = ContinuousDomain(0, 1)
         elif kw.upper()[0:3] == 'GEN':
-            dom = free_dom
+            dom = self.free_dom
         else:
             raise Exception('section not supported: %s' % kw)
 
@@ -222,7 +223,7 @@ class LPReader(InputReader):
         if id in self.var_table:
             return self.var_table[id]
         else:
-            self.var_table[id] = self.parser.new_int_variable(default_dom)
+            self.var_table[id] = self.parser.new_int_variable(self.default_dom)
             return self.var_table[id]
 
     def dispatch_section(self, section):

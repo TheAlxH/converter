@@ -53,6 +53,10 @@ def parse_args():
                         help="Constraints of length 3 or greater aren't split into multiple constraints of length 3")
     parser.add_argument("--reader-opts", "-e", help="Pass semicolon separated key=value options to the reader")
     parser.add_argument("--writer-opts", "-i", help="Pass semicolon separated key=value options to the writer")
+    parser.add_argument("--restrict-lb", "-l", dest='lb', type=int, help="Override any open lower bound with LB. "
+                        "This argument is an alternative for --reader-opts='lb=LB'")
+    parser.add_argument("--restrict-ub", "-u", dest='ub', type=int, help="Override any open upper bound with UB. "
+                        "This argument is an alternative for --reader-opts='ub=UB'")
     parser.add_argument("input", nargs="*", metavar="input-file", default='-',
                         help="Any number of instance files to convert. Use '-' to address stdin. '-' is default")
     return parser.parse_args()
@@ -67,6 +71,12 @@ if __name__ == "__main__":
 
     rdr_opts = {k: v for k, v in map(lambda o: o.split('='), args.reader_opts.split(';'))} if args.reader_opts else {}
     wtr_opts = {k: v for k, v in map(lambda o: o.split('='), args.writer_opts.split(';'))} if args.writer_opts else {}
+
+    # override open bounds
+    if args.lb is not None:
+        rdr_opts['lb'] = args.lb
+    if args.ub is not None:
+        rdr_opts['ub'] = args.ub
 
     for f in args.input:
         if f == '-':

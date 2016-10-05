@@ -6,12 +6,14 @@ from ..vendor.mps_parser import Parser as MPSParser
 class MPSReader(InputReader):
     INF = float('inf')
 
-    def __init__(self, convert_float=False):
-        super(MPSReader, self).__init__()
+    def __init__(self, **options):
+        super(MPSReader, self).__init__(**options)
 
         self.mps_parser = MPSParser()
-        self.mps_parser.convert_float = convert_float
+        self.mps_parser.convert_float = 'convert_float' in options
         self.var_table = {}
+
+        self.options = options
 
     def parse(self, input_file, **kwargs):
         is_gzip = (input_file[-2:] == 'gz') if type(input_file) == str else False
@@ -28,9 +30,6 @@ class MPSReader(InputReader):
 
     def define_variables(self, variables, lower_bounds, upper_bounds, free_bounds):
         for var in variables:
-            # if var in free_bounds:
-            #     raise Exception('lower bound values less than zero not allowed in ILP')
-
             if var in lower_bounds:
                 lb = lower_bounds[var]
             else:
@@ -39,11 +38,9 @@ class MPSReader(InputReader):
             if var in upper_bounds:
                 ub = int(upper_bounds[var])
             else:
-                ub = self.INF
-                self.parser.set_inf_bounds()
-
-            # if lb < 0 or ub < 0:
-            #     raise Exception('bound values less than zero not allowed in ILP')
+                ub = self.INF if 'ub' not in self.options else self.options['ub']
+                if ub == self.INF:
+                    self.parser.set_inf_bounds()
 
             self.var_table[var] = self.parser.new_int_variable(ContinuousDomain(lb, ub))
 
@@ -66,8 +63,5 @@ class MPSReader(InputReader):
                 raise Exception('undefined constraint relation: ' + relations[constraint_id])
 
     def get_optimization_vector(self, weighted_vars):
-        # self.parser.set_opt_strategy("minimize" if self.mps_parser.minimize else "maximize")
-        # self.parser.set_opt_strategy("maximize")
-
         for var, weight in weighted_vars.iteritems():
             self.parser.add_to_opt_vector(self.var_table[var], weight)

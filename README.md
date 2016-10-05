@@ -6,6 +6,7 @@ While all modules can be imported into new python scripts a command line based f
 ```
 parse --reader {READER} --writer {WRITER} --out-dir {OUTDIR}
         [--reader-opts OPTS] [writer-opts OPTS] 
+        [--restrict-lb LB] [restrict-ub UB] 
         [--no-split]
         [input-file [input-file ...]
         [--help]
@@ -26,12 +27,16 @@ All converted files are written into `OUTDIR`. '`-`' can be used to address `std
 (Optional) All positional arguments are treated as input files and are processed successively. If no input file is passed the converter reads from `stdin`.
 
 `--reader-opts OPTS` 
-(Optional) Some readers allow additional configuration. Use this option to pass those information. All values are given as KEY=VALUE pairs and multiple items 
-are separated by ';'.
+(Optional) Some readers allow additional configuration. Use this option to pass those information. All values are given as KEY=VALUE pairs and multiple items are separated by ';'.
 
 `--writer-opts OPTS` 
-(Optional) Some writers allow additional configuration. Use this option to pass those information. All values are given as KEY=VALUE pairs and multiple items 
-are separated by ';'.
+(Optional) Some writers allow additional configuration. Use this option to pass those information. All values are given as KEY=VALUE pairs and multiple items are separated by ';'.
+
+`--restrict-lb LB` 
+(Optional) Override any open lower bound with LB. This argument is an alternative for --reader-opts='lb=LB'
+
+`--restrict-ub UB` 
+(Optional) Override any open upper bound with UB. This argument is an alternative for --reader-opts='ub=UB'
 
 `--no-split`
 (Optional) By default linear integer constraints with a length greater three are split into multiple constraints. That behavior can be prevented by passing this parameter.
