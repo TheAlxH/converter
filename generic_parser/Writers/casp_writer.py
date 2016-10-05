@@ -7,6 +7,10 @@ from ..domains.continuous.continuous_domain import ContinuousDomain
 class CASPWriter(OutputWriter):
     INF = float('inf')
 
+    def __init__(self, **options):
+        super(CASPWriter, self).__init__(**options)
+        self.clause_counter = 1
+
     def write(self, output_filename, variables_with_bounds, bool_vars, opt_vector, constraints, clauses, b2i):
         if not output_filename:
             raise Exception('no output filename specified')
@@ -20,49 +24,77 @@ class CASPWriter(OutputWriter):
         if self.parser.has_inf_bounds():
             self.output_file.write('has_inf_dom.\n\n')
 
-        # FIXME workaround for bool vars: (convert into int)
-        variables_with_bounds.update({'b' + var: ContinuousDomain(0, 1) for var in bool_vars})
-
-        self.write_domains(variables_with_bounds)
+        self.write_domains(variables_with_bounds, bool_vars)
+        self.write_clauses(clauses)
         self.write_constraints(constraints)
+        self.write_b2i(b2i)
 
         self.write_objective_fn(opt_vector)
         self.output_file.write('\n')
 
-        # self.output_file.close()
-
     # TODO handle non-continuous domains
-    def write_domains(self, bounds):
+    def write_domains(self, bounds, booleans):
+        if booleans:
+            self.output_file.write('% BOOLS\n')
+            for b in booleans:
+                self.write_bool_variable(b)
+            self.output_file.write('{ p(B) : bool(B) }.\n\n')
+
         self.output_file.write('% DOMAINS\n')
 
         for var in sorted(bounds.iterkeys(), key=ILPParser.ILPParser.cmp_vars):
-            lb, ub = bounds[var].lb(), bounds[var].ub()
+            dom = bounds[var]
+            lb, ub = dom.lb(), dom.ub()
 
-            if lb == 0 and ub == 1:
-                self.write_bool_variable(var)
+            if (not isinstance(dom, ContinuousDomain) or abs(
+                    dom.multiplier) > 1) and not dom.has_open_bound() or dom.len() == 1:
+                values = map(str, dom.get_values_asc())
+                self.output_file.write('&dom{ %s } = %s.\n' % ('; '.join(values), var))
             else:
                 ub = 'inf' if ub == CASPWriter.INF else str(ub)
 
                 try:
-                    if str(lb) != str(ub):
-                        self.output_file.write('&dom{ %d..%s } = %s.\n' % (lb, ub, var))
-                    else:
-                        self.output_file.write('&dom{ %d } = %s.\n' % (lb, var))
+                    self.output_file.write('&dom{ %d..%s } = %s.\n' % (lb, ub, var))
                 except TypeError:
-                    sys.stderr.write('infinity bounds not supported\n')
-                    sys.stderr.write('translation canceled\n')
+                    sys.stderr.write('ERROR: infinity bounds not supported\n')
+                    sys.stderr.write('ERROR: translation canceled\n')
                     sys.exit(1)
 
     def write_bool_variable(self, var):
-        self.output_file.write('&dom{ 0; 1 } = %s.\n' % var)
+        self.output_file.write('bool("%s").\n' % var)
+
+    def write_clauses(self, clauses):
+        if clauses:
+            self.output_file.write('\n% CLAUSES.\n')
+
+            for clause in clauses:
+                for lit in clause:
+                    if lit[0] == '-':
+                        signed = 1
+                        lit = lit[1:]
+                    else:
+                        signed = 0
+                    self.output_file.write('clause(%d, "%s", %d).\n' % (self.clause_counter, lit, signed))
+                self.clause_counter += 1
+
+            self.output_file.write('clause(ID) :- clause(ID, _, _).\n')
+            self.output_file.write(':- clause(ID), p(B0) : clause(ID, B0, 1); not p(B1) : clause(ID, B1, 0).\n')
 
     def write_constraints(self, constraints):
-        self.output_file.write("\n% CONDITIONS\n")
+        self.output_file.write("\n% CONSTRAINTS\n")
 
         for var_list, b, rel in constraints:
             w_sum = self.get_weighted_sum(var_list)
 
             self.output_file.write('&sum{ %s } %s %d.\n' % ("; ".join(w_sum), ">=" if rel == "ge" else "<=", b))
+
+    def write_b2i(self, b2i):
+        if b2i:
+            self.output_file.write('\n% BOOL TO INT\n')
+            for c in b2i:
+                self.output_file.write('b2i("%s", %s).\n' % c)
+            self.output_file.write(':- b2i(B, X), p(B), not p(X, 1).\n')
+            self.output_file.write(':- b2i(B, X), not p(B), p(X, 1).\n')
 
     @staticmethod
     def get_weighted_sum(var_list):
