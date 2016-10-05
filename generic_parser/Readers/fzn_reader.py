@@ -1,7 +1,10 @@
 import gzip
 import os.path
+import os
 import re
 import sys
+import subprocess
+import tempfile
 
 from InputReader import InputReader
 from ..domains.continuous.continuous_domain import ContinuousDomain
@@ -20,28 +23,45 @@ rel_map = {
 }
 
 
-class FZNImfReader(InputReader):
-    def __init__(self, convert_float=False):
-        super(FZNImfReader, self).__init__()
+class FZNReader(InputReader):
+    def __init__(self, **options):
+        super(FZNReader, self).__init__(**options)
         self.var_table = {}
 
     def parse(self, input_file, **kwargs):
-        is_gzip = (input_file[-2:] == 'gz') if type(input_file) == str else False
+        if type(input_file) == str and input_file[-2:] == 'gz':
+            sys.stderr.write('WARNING: gzip files not supported by FZN reader\n')
 
-        if input_file != sys.stdin and not is_gzip:
-            input_file = open(input_file, "r")
-        elif type(input_file) == str:
-            input_file = gzip.open(input_file, "r")
+        if input_file == sys.stdin:
+            tmp = tempfile.NamedTemporaryFile('w', delete=False)
+            name = tmp.name
+            file_name = input_file.name
 
-        self.parser.set_instance_name(os.path.basename(os.path.splitext(input_file.name)[0]))
-        self.parse_instance(input_file)
+            for l in iter(sys.stdin.readline, ''):
+                tmp.write(l)
 
-        input_file.close()
+            tmp.close()
+        else:
+            name = input_file
+            file_name = input_file
+
+        if not os.path.isfile('./gecode/fz'):
+            sys.stderr.write('ERROR: ./gecode/fz not found. Build first...\n')
+            sys.exit(1)
+
+        sub = subprocess.Popen(['./gecode/fz', name], stdout=subprocess.PIPE, universal_newlines=True)
+
+        self.parser.set_instance_name(os.path.basename(os.path.splitext(file_name)[0]))
+        self.parse_instance(sub.stdout)
+
+        if input_file == sys.stdin:
+            os.remove(name)
+
         return True
 
     def parse_instance(self, f):
         for line in iter(f.readline, b''):
-            self.parse_line(line)
+            self.parse_line(line.rstrip())
 
         return None
 
@@ -51,21 +71,21 @@ class FZNImfReader(InputReader):
         split += 1
 
         if token == '[INT]':
-            self.parse_variable(line[split:-1])
+            self.parse_variable(line[split:])
         elif token == '[BOOL]':
-            self.parse_variable(line[split:-1], is_bool=True)
+            self.parse_variable(line[split:], is_bool=True)
         elif token == '[CONSTRAINT]':
-            self.parse_constraint(line[split:-1])
+            self.parse_constraint(line[split:])
         elif token == '[ALLDIFFERENT]':
-            self.parse_alldiff(line[split:-1])
+            self.parse_alldiff(line[split:])
         elif token == '[REIFIED]':
-            self.parse_reified(line[split:-1])
+            self.parse_reified(line[split:])
         elif token == '[OPTIMIZATION]':
-            self.parse_optimization(line[split:-1])
+            self.parse_optimization(line[split:])
         elif token == '[DISJUNCTION]':
-            self.parse_disjunction(line[split:-1])
+            self.parse_disjunction(line[split:])
         elif token == '[BOOL2INT]':
-            self.parse_bool2int(line[split:-1])
+            self.parse_bool2int(line[split:])
 
     def parse_variable(self, line, is_bool=False):
         if is_bool:

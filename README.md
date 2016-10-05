@@ -1,3 +1,10 @@
+Compilation/Installation
+------------------------
+
+The parser is written in plain Python 2.7 and doesn't require any compilation. If you want to use the [FlatZinc](http://www.minizinc.org/downloads/doc-1.6/flatzinc-spec.pdf) you have to compile the gecode based parser first. Have a look at its [README](./gecode/README) for further details.
+
+
+
 Usage
 -----
 
@@ -65,21 +72,25 @@ Currently Supported Readers and Writers
 
 ### Readers
 
-**mps**    [MPS format](http://lpsolve.sourceforge.net/5.5/mps-format.htm)
+* **mps**    [MPS format](http://lpsolve.sourceforge.net/5.5/mps-format.htm)
+* **lp**     [LP format](https://www.ibm.com/support/knowledgecenter/SS9UKU_12.5.0/com.ibm.cplex.zos.help/FileFormats/topics/LP.html)
+* **pisinger** [1]
+* **fzn**    [Flatzinc](http://www.minizinc.org/downloads/doc-1.6/flatzinc-spec.pdf) (parser based on [gecode](http://www.gecode.org/))
 
-**lp**    [LP format](https://www.ibm.com/support/knowledgecenter/SS9UKU_12.5.0/com.ibm.cplex.zos.help/FileFormats/topics/LP.html)
 
-**pisinger** [1]
+
+| Feature \ Reader | mps | lp  | pisinger | fzn |
+|------------------|:---:|:---:|:--------:|:---:|
+| `stdin`          | ✓   | ✓   | ✓        | ✓   |
+| gzip support     | ✓   | ✗   | ✓        | ✗   |
 
 
 
 ### Writers
 
-**Aspartame** [Potassco Aspartame](http://www.cs.uni-potsdam.de/aspartame/)
-
-**CASP** [Potassco clingcon](http://www.cs.uni-potsdam.de/clingcon/)
-
-**Sugar** [sugar syntax](http://bach.istc.kobe-u.ac.jp/sugar/package/current/docs/syntax.html)
+* **Aspartame** [Potassco Aspartame](http://www.cs.uni-potsdam.de/aspartame/)
+* **CASP** [Potassco clingcon](http://www.cs.uni-potsdam.de/clingcon/)
+* **Sugar** [sugar syntax](http://bach.istc.kobe-u.ac.jp/sugar/package/current/docs/syntax.html)
 
 
 

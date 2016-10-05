@@ -1,0 +1,14 @@
+ast.hh
+conexpr.hh
+flatzinc.cpp
+flatzinc.hh
+fz.cpp
+lexer.yy.cpp
+option.hh
+parser.hh
+parser.tab.cpp
+parser.tab.hh
+registry.cpp
+registry.hh
+symboltable.hh
+varspec.hh

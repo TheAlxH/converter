@@ -3,7 +3,7 @@
 import generic_parser.ILPParser as Parser
 from generic_parser.Readers.mps_reader import *
 from generic_parser.Readers.pisinger_reader import *
-from generic_parser.Readers.fznimf_reader import FZNImfReader
+from generic_parser.Readers.fzn_reader import FZNReader
 from generic_parser.Readers.inc_reader import IncReader
 from generic_parser.Readers.lp_reader import LPReader
 from generic_parser.Writers.sugar_writer import *
@@ -17,7 +17,7 @@ import sys
 readers = {
     "mps": MPSReader,
     "pisinger": PisingerReader,
-    "fznimf": FZNImfReader,
+    "fzn": FZNReader,
     "lp": LPReader,
     "inc": IncReader
 }
