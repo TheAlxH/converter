@@ -19,7 +19,10 @@ class CASPWriter(OutputWriter):
 
         if type(self.parser.instance_name) == str:
             self.output_file.write('%%% ' + self.parser.instance_name + ' %%%\n')
-        self.output_file.write("#include \"csp.lp\".\n\n")
+
+        if 'csp' not in self.options or self.options['csp']:
+            csp_path = self.options['csp'] if 'csp' in self.options else 'csp.lp'
+            self.output_file.write("#include \"%s\".\n\n" % csp_path)
 
         if self.parser.has_inf_bounds():
             self.output_file.write('has_inf_dom.\n\n')

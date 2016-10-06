@@ -11,6 +11,7 @@ class OutputWriter:
     def __init__(self, **options):
         self.parser = None
         self.output_file = None
+        self.options = options
 
     def set_parser(self, parser):
         self.parser = parser
