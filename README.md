@@ -11,7 +11,8 @@ Usage
 While all modules can be imported into new python scripts a command line based frontend is offered with the python `parse` script. 
 
 ```
-parse --reader {READER} --writer {WRITER} --out-dir {OUTDIR}
+parse --reader {READER} --writer {WRITER} 
+        [--out-dir {OUTDIR}]
         [--reader-opts OPTS] [writer-opts OPTS] 
         [--restrict-lb LB] [restrict-ub UB] 
         [--no-split]
@@ -28,7 +29,7 @@ Specifies the reader (the input format) to be used.
 Specifies the writer (the output format) to be used.
 
 `--out-dir OUTDIR`
-All converted files are written into `OUTDIR`. '`-`' can be used to address `stdout`.
+(Optional) All converted files are written into `OUTDIR`. '`-`' can be used to address `stdout`. Default is '-'
 
 `input-file [input-file ...]`
 (Optional) All positional arguments are treated as input files and are processed successively. If no input file is passed the converter reads from `stdin`.
