@@ -33,6 +33,7 @@ class CASPWriter(OutputWriter):
         self.write_b2i(b2i)
 
         self.write_objective_fn(opt_vector)
+        self.write_show(variables_with_bounds)
         self.output_file.write('\n')
 
     # TODO handle non-continuous domains
@@ -117,3 +118,7 @@ class CASPWriter(OutputWriter):
             opt_term = "; ".join(terms)
 
             self.output_file.write("\n&minimize{ %s }." % opt_term)
+
+    def write_show(self, variables):
+        self.output_file.write('\n&show{ %s }.\n' % "; ".join(variables.keys()))
+        self.output_file.write('#show p/1.\n\n')

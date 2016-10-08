@@ -91,7 +91,7 @@ Currently Supported Readers and Writers
 
 * **Aspartame** [Potassco Aspartame](http://www.cs.uni-potsdam.de/aspartame/)
 * **CASP** [Potassco clingcon](http://www.cs.uni-potsdam.de/clingcon/)
-    * Use the `--writer-opts="csp=DIR"` to provide an alternative csp include location. If `--writer-opts="csp="` the include statement is omitted.
+    * Use `--writer-opts="csp=DIR"` to provide an alternative csp include location. If `--writer-opts="csp="` the include statement is omitted.
 * **Sugar** [sugar syntax](http://bach.istc.kobe-u.ac.jp/sugar/package/current/docs/syntax.html)
 
 
