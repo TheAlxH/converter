@@ -42,8 +42,6 @@ def parse_args():
     parser.add_argument("--out-dir", "-o", dest="outdir", default="-",
                         help="Specifies the target directory for the translated instances. stdout can be addressed "
                              "by using '-'. Default is stdout")
-    parser.add_argument("--num-instances", "-n", type=int, default=0, dest="num",
-                        help="In Smallcoeff reader mode defines the number of instances read from a single file")
     parser.add_argument("--opt-strategy", "-s", dest="opt", choices=opt_strategies,
                         help="Override all specified strategies with the given one (not working yet)")
     parser.add_argument("--default-opt-strategy", "-d", dest="default_opt", choices=opt_strategies,
@@ -97,8 +95,12 @@ if __name__ == "__main__":
 
         _parser = Parser.ILPParser(reader, writer, **options)
 
-        if args.num == 0:
-            args.num = float("inf")
+        n_instances = 1
+        if args.reader == "pisinger" and "n" in rdr_opts:
+            if int(rdr_opts["n"]) <= 0:
+                n_instances = float("inf")
+            else:
+                n_instances = int(rdr_opts["n"])
 
         _parser.parse_input(f)
         _parser.write_output(args.outdir)
@@ -108,10 +110,10 @@ if __name__ == "__main__":
         elif f == sys.stdin:
             sys.stderr.write("<stdin> parsed\n")
 
-        if args.reader == "pisinger" and args.num > 1:
+        if args.reader == "pisinger" and n_instances > 1:
             instances_read = 1
 
-            while not reader.EOF and instances_read < args.num:
+            while not reader.EOF and instances_read < n_instances:
                 offset = reader.offset
                 if not _parser.parse_input(f, offset):
                     break
