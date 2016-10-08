@@ -15,7 +15,7 @@ parse --reader {READER} --writer {WRITER}
         [--out-dir {OUTDIR}]
         [--reader-opts OPTS] [writer-opts OPTS] 
         [--restrict-lb LB] [restrict-ub UB] 
-        [--no-split]
+        [--split S]
         [input-file [input-file ...]
         [--help]
 ```
@@ -46,8 +46,8 @@ Specifies the writer (the output format) to be used.
 `--restrict-ub UB` 
 (Optional) Override any open upper bound with UB. This argument is an alternative for --reader-opts='ub=UB'
 
-`--no-split`
-(Optional) By default linear integer constraints with a length greater three are split into multiple constraints. That behavior can be prevented by passing this parameter.
+`--split S`
+(Optional) If set to 1 or 2 linear integer constraints with a length greater three are split into multiple constraints. If set to 1 constraints are split with equalities. Otherwise (set to 2) they are split using inequalities. 
 
 `--help`
 (Optional) Prints a basic help for CLI usage.

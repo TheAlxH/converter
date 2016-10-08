@@ -102,7 +102,7 @@ class ILPParser:
         else:
             raise Exception("unknown optimization strategy")
 
-    def _constraint_split(self, terms):
+    def _constraint_split_eq(self, terms):
         if len(terms) == 2:
             # FIXME currently only: x+y but need: 2x - 6y
             dom1 = ILPParser.term_domain(self.variables[terms[0][0]], terms[0][1])
@@ -112,7 +112,7 @@ class ILPParser:
             self.add_eq_constraint([(s0, 1)] + ILPParser.inverse_terms(terms), 0)
             return s0
         else:
-            s2 = self._constraint_split(terms[1:])
+            s2 = self._constraint_split_eq(terms[1:])
             var, w = terms[0]
             dom = ILPParser.term_domain(self.variables[var], w)
             new_dom = ILPParser.merge_dom(dom, self.variables[s2])
@@ -120,17 +120,34 @@ class ILPParser:
             self.add_eq_constraint([(s1, 1), (var, -w), (s2, -1)], 0)
             return s1
 
-    def add_ge_constraint(self, terms, b, reified_var=None):
+    def _constraint_split_le(self, terms, b, reified=None):
+        dom = self.variables[terms[0][0]]
+        dom = dom.copy(multiplier=terms[0][1])
+        s = self.new_int_variable(dom, internal=True)
+        self.add_ge_constraint([terms[0], (s, -1)], 0, split=False)
+
+        for t in terms[1:]:
+            var, w = t
+            dom_n = self.variables[var].copy(multiplier=w)
+            dom_n = ILPParser.merge_dom(dom_n, dom)
+            sn = self.new_int_variable(dom_n, internal=True)
+            self.add_ge_constraint([t, (s, 1), (sn, -1)], 0, split=False)
+            s = sn
+            dom = dom_n
+
+        self.add_ge_constraint([(s, 1)], b, split=False, reified_var=reified)
+
+    def add_ge_constraint(self, terms, b, reified_var=None, split=True):
         self._check_variables(terms)
 
-        if len(terms) > 3 and ("no_split" not in self.options or self.options["no_split"] is not True):
+        if len(terms) > 3 and "split" in self.options and self.options["split"] == 1:
             # first step
-            s = self._constraint_split(terms[2:])
+            s = self._constraint_split_eq(terms[2:])
             self.add_ge_constraint(terms[:2] + [(s, 1)], b, reified_var=reified_var)
+        elif len(terms) > 3 and "split" in self.options and self.options["split"] == 2:
+            self._constraint_split_le(terms, b, reified=reified_var)
         else:
             self.constraint_matrix.append((terms, b, reified_var))
-
-        return len(self.constraint_matrix) - 1
 
     def add_le_constraint(self, vars_with_weights, b, reified_var=None):
         return self.add_ge_constraint(ILPParser.inverse_terms(vars_with_weights), -b, reified_var=reified_var)
@@ -228,12 +245,13 @@ class ILPParser:
     def merge_dom(dom1, dom2):
         domains = [dom1, dom2]
         domain_classes = {dom1.__class__, dom2.__class__}
+        cont_dom_multiplier = abs(dom1.multiplier * dom2.multiplier)
         domain_open_bounds = dom1.has_open_bound() or dom2.has_open_bound()
         cont_dom_open_b = sum([d.has_open_bound() for d in [dom1, dom2] if isinstance(d, ContinuousDomain)]) > 0
         simple_cont_dom_open_b = sum([d.has_open_bound() and abs(d.multiplier) == 1 for d in [dom1, dom2] if
                                       isinstance(d, ContinuousDomain)]) > 0
 
-        if ContinuousDomain in domain_classes and (
+        if ContinuousDomain in domain_classes and cont_dom_multiplier == 1 and (
                 len(domain_classes) == 1 or cont_dom_open_b) and simple_cont_dom_open_b:
             # only ContinuousDomain instances or at least on unbounded ContinuousDomain instance
             lb = sum([d.lb() for d in domains])

@@ -45,7 +45,7 @@ def read(file_path, logger, t_start=None):
     instance['constraints'] = map(lambda c: tuple(c), instance['constraints'])
     raw_constraints = []
     for cc in instance['constraints']:
-        c = (map(lambda x: (str(x[0]), x[1]), cc[0]), cc[1], (str(cc[2][0]), cc[2][1]) if cc[2] is not None else None)
+        c = (map(lambda x: (str(x[0]), x[1]), cc[0]), cc[1], str(cc[2]) if cc[2] is not None else None)
         raw_constraints.append(c)
     for terms, b, r in raw_constraints:
         constraints.append(Constraint([tuple(term) for term in terms], b, reified=r))
