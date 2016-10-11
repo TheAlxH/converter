@@ -80,10 +80,15 @@ Currently Supported Readers and Writers
 
 
 
-| Feature \ Reader | mps | lp  | pisinger | fzn |
-|------------------|:---:|:---:|:--------:|:---:|
-| `stdin`          | ✓   | ✓   | ✓        | ✓   |
-| gzip support     | ✓   | ✗   | ✓        | ✗   |
+| Feature \ Reader        | mps | lp  | pisinger | fzn |
+|-------------------------|:---:|:---:|:--------:|:---:|
+| `stdin`                 | ✓   | ✓   | ✓        | ✓   |
+| gzip support            | ✓   | ✗   | ✓        | ✗   |
+| non-constinuous domains | ✓   | ✓   | (✓)      | ✗   |
+
+(✓) all domains in pisinger instances have the domain 0, 1.
+
+_The fzn reader uses an intermediate format (fznimf) for communication between gecode and the reader. The syntax is described [here](./fznimf_syntax.txt)_
 
 
 
@@ -94,6 +99,12 @@ Currently Supported Readers and Writers
     * Use `--writer-opts="csp=DIR"` to provide an alternative csp include location. If `--writer-opts="csp="` the include statement is omitted.
 * **Sugar** [sugar syntax](http://bach.istc.kobe-u.ac.jp/sugar/package/current/docs/syntax.html)
 
+
+| Feature \ Writer    | aspartame | casp | sugar | inc |
+|---------------------|:---------:|:----:|:-----:|:---:|
+| boolean clauses     | ✓         | ✓    | ✓     | ✓   |
+| bool to int         | ✓         | ✓    | ✓     | ✓   |
+| reified constraints | ✗         | ✗    | ✗     | ✓   |
 
 
 References

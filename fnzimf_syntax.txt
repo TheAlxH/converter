@@ -1,0 +1,33 @@
+fznimf ::= (line "\n")*
+
+Integer ::= Digit+ | -Digit+
+Digit ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+BoolIdentifier = "b"Integer+ | "0" | "1"
+IntIdentifier = "x"Integer+
+
+Term ::= IntegerIdentifier
+Operand ::= Op Term
+Op ::= "+" | "-"
+
+Line ::= Var | Constraint | Alldifferent | Reified | Optimization | Disjunction | BoolToInt
+
+Var ::= BoolVar | IntVar
+BoolVar ::= "[BOOL]" BoolIdentifier
+IntVar ::= "[INT]" IntIdentifier Range
+Range ::= "["Integer".."Integer"]"
+
+Constraint ::= "[CONSTRAINT]" Term Operand* Rel Integer
+Rel ::= = | =  | = | != |  | 
+
+Alldifferent ::= IntIdentifier+
+
+Reified ::= Constraint "-" BoolIdentifier
+
+Optimization ::= OptStrategy Identifier
+OptStrategy ::= "maximize" | "minimize"
+
+Disjunction ::=  Neg?BoolIdentifier+
+Neg ::= -
+
+BoolToInt ::= "[BOOL2INT]" BoolIdentifier IntIdentifier

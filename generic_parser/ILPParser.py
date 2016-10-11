@@ -140,11 +140,11 @@ class ILPParser:
     def add_ge_constraint(self, terms, b, reified_var=None, split=True):
         self._check_variables(terms)
 
-        if len(terms) > 3 and "split" in self.options and self.options["split"] == 1:
+        if len(terms) > 3 and split and "split" in self.options and self.options["split"] == 1:
             # first step
             s = self._constraint_split_eq(terms[2:])
             self.add_ge_constraint(terms[:2] + [(s, 1)], b, reified_var=reified_var)
-        elif len(terms) > 3 and "split" in self.options and self.options["split"] == 2:
+        elif len(terms) > 3 and split and "split" in self.options and self.options["split"] == 2:
             self._constraint_split_le(terms, b, reified=reified_var)
         else:
             self.constraint_matrix.append((terms, b, reified_var))
