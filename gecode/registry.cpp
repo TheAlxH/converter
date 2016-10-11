@@ -1039,55 +1039,33 @@ namespace FlatZinc {
     }
 
     void p_array_bool_or(FlatZincModel &s, const ConExpr &ce, AST::Node *ann) {
-        // linear equivalent: b1 + b2 + ... >= 1 <-> br
-        if (debug) {
-            std::cout << "p_array_bool_or";
-        }
-        int  idreif;
-        bool isReif   = true;
-        int  trivTrue = 0;
+        int reif_id;
 
         if (ce[1]->isBool()) {
-//            std::cerr << "Error: static bool in reified constraint not supported\n";
-//            std::exit(1);
-            isReif = false;
             if (ce[1]->getBool()) {
-                idreif = s.getTrueUid();
+                reif_id = s.getTrueUid();
             } else {
-                idreif = s.getFalseUid();
+                reif_id = s.getFalseUid();
             }
         } else {
-            idreif = s.getBoolVariableUid(ce[1]->getBoolVar());
+            reif_id = s.getBoolVariableUid(ce[1]->getBoolVar());
         }
 
-        std::cout << (isReif ? "[REIFIED] " : "[CONSTRAINT] ");
-
-        int             j = 0;
-        for (const auto &i : ce[0]->getArray()->a) {
-            if (i->isBool() && i->getBool()) {
-                trivTrue++;
-            } else {
-                std::cout << "b" << s.getBoolVariableUid(i->getBoolVar());
-                //              std::cout << "1 0 0 0 2 " << s.getBoolVariableUid(i->getBoolVar()) << " " << -(int)(idreif) << "\n";
+        std::vector<int> v1;
+        for (const auto  &i : ce[0]->getArray()->a) {
+            if (!i->isBool() || !i->getBool()) {
+                v1.push_back(s.getBoolVariableUid(i->getBoolVar()));
             }
+        }
 
-            if (j < ce[0]->getArray()->a.size() - 1) {
-                std::cout << " + ";
+        std::vector<int> r{reif_id};
+        print_clause(v1, r, s);
+        if (reif_id != s.getTrueUid()) {
+            for (const auto &i : ce[0]->getArray()->a) {
+                std::vector<int> a{s.getBoolVariableUid(i->getBoolVar())};
+                print_clause(r, a, s);
             }
-            j++;
         }
-
-        if (idreif == s.getFalseUid()) {
-            std::cout << " < -1";  // always false
-        } else {
-            std::cout << " >= " << (1 - trivTrue);
-        }
-
-        if (isReif) {
-            std::cout << " <-> b" << idreif;
-        }
-
-        std::cout << "\n";
     }
 
     void p_array_bool_clause(FlatZincModel &s, const ConExpr &ce, AST::Node *ann) {
