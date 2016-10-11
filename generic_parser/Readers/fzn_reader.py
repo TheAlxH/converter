@@ -57,6 +57,10 @@ class FZNReader(InputReader):
         if input_file == sys.stdin:
             os.remove(name)
 
+        if sub.wait() != 0:
+            sys.stderr.write('ERROR: fzn parsing aborted\n')
+            sys.exit(sub.returncode)
+
         return True
 
     def parse_instance(self, f):
@@ -148,7 +152,7 @@ class FZNReader(InputReader):
             return
         if '0' in literals:
             literals.remove('0')
-        self.parser.add_clause([self.var_table[lit] for lit in literals])
+        self.parser.add_clause(*[self._get_bool_var(lit) for lit in literals])
 
     def parse_bool2int(self, line):
         b, i = line.strip().split()
@@ -156,3 +160,9 @@ class FZNReader(InputReader):
             b = self.var_table[b]
 
         self.parser.add_bool2int(b, self.var_table[i])
+
+    def _get_bool_var(self, b):
+        if b[0] == '-':
+            return '-' + self.var_table[b[1:]]
+        else:
+            return self.var_table[b]
