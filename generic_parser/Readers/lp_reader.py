@@ -15,6 +15,8 @@ keywords_gen = ['GENERALS', 'GENERAL', 'GEN']
 keywords_var = ['SEMIS', 'SEMI-CONTINUOUS', 'SEMI'] + keywords_bnd + keywords_bin + keywords_gen
 keywords = ['END'] + keywords_obj + keywords_con + keywords_var
 
+INF = float('inf')
+
 
 def tokenize(s):
     Token = collections.namedtuple('Token', ['typ', 'value', 'line', 'column'])
@@ -66,6 +68,7 @@ class LPReader(InputReader):
         self.d_ub = float('inf') if 'ub' not in options else options['ub']
         self.default_dom = ContinuousDomain(0, self.d_ub)
         self.free_dom = ContinuousDomain(self.d_lb, self.d_ub)
+        self.convert_float = 'convert_float' in options and options['convert_float'] is not False
 
     def set_parser(self, parser):
         super(LPReader, self).set_parser(parser)
@@ -102,6 +105,11 @@ class LPReader(InputReader):
             for c in constraints:
                 op(*c)
 
+        for var, dom in self.parser.variables.items():
+            if dom.len() == INF:
+                self.parser.set_inf_bounds()
+                break
+
     def parse_obj_section(self, kw):
         n = None
         minus = False
@@ -115,7 +123,7 @@ class LPReader(InputReader):
                 return
 
             if token.typ == 'NUMBER':
-                n = int(token.value)
+                n = self._convert_float(token.value)
             elif token.typ == 'ARITHMETIC':
                 minus = token.value == '-'
             elif token.typ == 'ID':
@@ -146,19 +154,28 @@ class LPReader(InputReader):
                 minus = token.value == '-'
             elif token.typ == 'NUMBER':
                 if op is None:
-                    n = int(token.value)
+                    n = self._convert_float(token.value)
                 else:
                     # delay constraints registration for more domain knowledge
                     if op in self.constraints:
-                        self.constraints[op].append((terms, int(token.value)))
+                        self.constraints[op].append((terms, self._convert_float(token.value)))
                     else:
-                        self.constraints[op] = [(terms, int(token.value))]
+                        self.constraints[op] = [(terms, self._convert_float(token.value))]
                     n = op = None
                     terms = []
             elif token.typ == 'OPERATOR':
                 if token.value == '[' or token.value == ']':
                     raise Exception("quadratic expressions not supported")
                 op = self.op_map[token.value]
+
+    def _convert_float(self, n):
+        try:
+            return int(n)
+        except ValueError:
+            if self.convert_float:
+                return int(float(n))
+            else:
+                raise
 
     def parse_bounds_section(self):
         lb = ub = var = op = None
@@ -184,11 +201,11 @@ class LPReader(InputReader):
                 var = token.value
             elif token.typ == 'NUMBER':
                 if var is None:
-                    lb = int(token.value)
+                    lb = self._convert_float(token.value)
                 elif op == '<=':
-                    ub = int(token.value)
+                    ub = self._convert_float(token.value)
                 elif op == '>=':
-                    lb = int(token.value)
+                    lb = self._convert_float(token.value)
             elif token.typ == 'CONST':
                 if token.value == 'free':
                     lb, ub = self.d_lb, self.d_ub
