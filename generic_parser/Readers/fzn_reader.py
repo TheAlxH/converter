@@ -45,11 +45,13 @@ class FZNReader(InputReader):
             name = input_file
             file_name = input_file
 
-        if not os.path.isfile('./gecode/fz'):
+        fzn_path = os.path.split(__file__)[0] + '/../../gecode/fz'
+
+        if not os.path.isfile(fzn_path):
             sys.stderr.write('ERROR: ./gecode/fz not found. Build first...\n')
             sys.exit(1)
 
-        sub = subprocess.Popen(['./gecode/fz', name], stdout=subprocess.PIPE, universal_newlines=True)
+        sub = subprocess.Popen([fzn_path, name], stdout=subprocess.PIPE, universal_newlines=True)
 
         self.parser.set_instance_name(os.path.basename(os.path.splitext(file_name)[0]))
         self.parse_instance(sub.stdout)
