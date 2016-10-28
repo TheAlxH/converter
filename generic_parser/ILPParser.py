@@ -44,10 +44,46 @@ class ILPParser:
         self.instance_name = ''
 
         self.options = options
+        self.stats = {
+            'constr_len': []
+        }
 
     def parse_input(self, input_file, offset=0):
         self.reset()
-        return self.reader.parse(input_file, offset=offset)
+        self.reader.parse(input_file, offset=offset)
+        if 'stats' in self.options and self.options['stats']:
+            self.print_stats()
+
+    def print_stats(self):
+        max_digit = max(
+            [len(self.variables.keys()), len(self.bool_variables), len(self.constraint_matrix), len(self.clauses)])
+        max_digit = str(len(str(max_digit)))
+
+        sys.stderr.write('int variables:           %~d\n'.replace('~', max_digit) % len(self.variables.keys()))
+        if not self.inf_dom:
+            avg, median = self.avg_domain_len()
+            sys.stderr.write('  avg domain size:       %~.2f\n'.replace('~', max_digit) % avg)
+            sys.stderr.write('  median domain size:    %~.0f\n'.replace('~', max_digit) % median)
+        sys.stderr.write('bool variables:          %~d\n'.replace('~', max_digit) % len(self.bool_variables))
+        sys.stderr.write('inf domains (y/n):       %~s\n'.replace('~', max_digit) % ('y' if self.inf_dom else 'n'))
+
+        constr_len = sorted(self.stats['constr_len'])
+        constr_median = constr_len[len(constr_len) / 2]
+        sys.stderr.write('int constraints:         %~d\n'.replace('~', max_digit) % len(self.constraint_matrix))
+        sys.stderr.write(
+            '  avg len:               %~.2f\n'.replace('~', max_digit) % (sum(constr_len) / float(len(
+                self.constraint_matrix))))
+        sys.stderr.write('  max len:               %~d\n'.replace('~', max_digit) % constr_len[-1])
+        sys.stderr.write('  median len:            %~d\n'.replace('~', max_digit) % constr_median)
+
+        sys.stderr.write('clauses:                 %~d\n'.replace('~', max_digit) % len(self.clauses))
+        sys.stderr.write('bool to int:             %~d\n'.replace('~', max_digit) % len(self.bool_to_int))
+        sys.stderr.write('opt vector:              %~d\n'.replace('~', max_digit) % len(self.opt_vector))
+
+    def avg_domain_len(self):
+        _sum = sorted([dom.len() for v, dom in self.variables.items()])
+        median = _sum[len(_sum) / 2]
+        return float(sum(_sum)) / float(len(self.variables)), median
 
     def write_output(self, output):
         if self.instance_name == '':
@@ -147,6 +183,8 @@ class ILPParser:
         elif len(terms) > 3 and split and "split" in self.options and self.options["split"] == 2:
             self._constraint_split_le(terms, b, reified=reified_var)
         else:
+            if 'stats' in self.options and self.options['stats']:
+                self.stats['constr_len'].append(len(terms))
             self.constraint_matrix.append((terms, b, reified_var))
 
     def add_le_constraint(self, vars_with_weights, b, reified_var=None):
@@ -252,7 +290,8 @@ class ILPParser:
                                       isinstance(d, ContinuousDomain)]) > 0
 
         if ContinuousDomain in domain_classes and cont_dom_multiplier == 1 and (
-                len(domain_classes) == 1 or cont_dom_open_b) and simple_cont_dom_open_b:
+                        len(domain_classes) == 1 or cont_dom_open_b) and simple_cont_dom_open_b \
+                or dom1.len() * dom2.len() > 10000:
             # only ContinuousDomain instances or at least on unbounded ContinuousDomain instance
             lb = sum([d.lb() for d in domains])
             ub = sum([d.ub() for d in domains])

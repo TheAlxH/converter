@@ -37,8 +37,6 @@ def parse_args():
         description="This parser reads a specified file format and translates it into another one.")
     parser.add_argument("--reader", "-r", required=True, choices=readers.keys(), help="Specifies the reader to use")
     parser.add_argument("--writer", "-w", required=True, choices=writers.keys(), help="Specifies the writer to use")
-    parser.add_argument("--mps-convert-float", "-f", action="store_true", dest="convert_float",
-                        help="In MPS writer mode converts all float coefficients to integer")
     parser.add_argument("--out-dir", "-o", dest="outdir", default="-",
                         help="Specifies the target directory for the translated instances. stdout can be addressed "
                              "by using '-'. Default is stdout")
@@ -50,6 +48,7 @@ def parse_args():
     parser.add_argument("--split", "-p", choices=[1, 2], type=int, default=0,
                         help="Constraints of length 3 or greater aren't split into multiple constraints of length 3 if"
                         " option is set to 1 or 2.")
+    parser.add_argument("--stats", "-v", action="store_true", help="Displays some parsing statistics.")
     parser.add_argument("--reader-opts", "-e", help="Pass semicolon separated key=value options to the reader")
     parser.add_argument("--writer-opts", "-i", help="Pass semicolon separated key=value options to the writer")
     parser.add_argument("--restrict-lb", "-l", dest='lb', type=int, help="Override any open lower bound with LB. "
@@ -63,7 +62,9 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    options = {}
+    options = {
+        'stats': args.stats
+    }
 
     if args.split:
         options['split'] = args.split
@@ -91,7 +92,7 @@ if __name__ == "__main__":
             rdr_opts["default_opt_strategy"] = args.default_opt
 
         # TODO opt_strategy external set
-        reader = readers[args.reader](convert_float=args.convert_float, **rdr_opts)
+        reader = readers[args.reader](**rdr_opts)
         writer = writers[args.writer](**wtr_opts)
 
         _parser = Parser.ILPParser(reader, writer, **options)
