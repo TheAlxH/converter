@@ -1,4 +1,5 @@
 import json
+import gzip
 import sys
 from time import time
 from order_encoding.constraint import Constraint
@@ -12,8 +13,12 @@ def read(file_path, logger, t_start=None):
         t_start = time()
 
     if file_path != sys.stdin:
-        with open(file_path, "r") as inst:
-            instance = json.load(inst)
+        if file_path[-3:] == '.gz':
+            with gzip.open(file_path, 'r') as inst:
+                instance = json.load(inst)
+        else:
+            with open(file_path, "r") as inst:
+                instance = json.load(inst)
     else:
         instance = json.loads(file_path.read())
 
