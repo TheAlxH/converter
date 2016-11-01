@@ -34,7 +34,7 @@ class PisingerReader(InputReader):
         self.get_constraints(weights, capacity)
         self.get_optimization_vector(profits)
         self.get_optimization_strategy()
-        self.parser.set_instance_name(instance_name)
+        self.converter.set_instance_name(instance_name)
 
         if input_file != sys.stdin:
             input_file.close()
@@ -47,18 +47,18 @@ class PisingerReader(InputReader):
         for i in range(0, len(weights)):
             weighted_variables.append((self.var_table[i], weights[i]))
 
-        self.parser.add_le_constraint(weighted_variables, capacity)
+        self.converter.add_le_constraint(weighted_variables, capacity)
 
     def get_optimization_strategy(self):
-        self.parser.set_opt_strategy(PisingerReader.strategy)
+        self.converter.set_opt_strategy(PisingerReader.strategy)
 
     def get_optimization_vector(self, profits):
         for i in range(0, len(profits)):
-            self.parser.add_to_opt_vector(self.var_table[i], profits[i])
+            self.converter.add_to_opt_vector(self.var_table[i], profits[i])
 
     def define_variables(self, internal_representation):
         for var in range(0, len(internal_representation)):
-            self.var_table[var] = self.parser.new_int_variable(ContinuousDomain(0, 1))
+            self.var_table[var] = self.converter.new_int_variable(ContinuousDomain(0, 1))
 
     def parse_one_instance(self, f, offset=0):
         weights = []

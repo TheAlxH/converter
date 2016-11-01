@@ -5,10 +5,10 @@ class InputReader:
     __metaclass__ = ABCMeta
 
     def __init__(self, **options):
-        self.parser = None
+        self.converter = None
 
-    def set_parser(self, parser):
-        self.parser = parser
+    def set_converter(self, converter):
+        self.converter = converter
 
     @abstractmethod
     def parse(self, input_file, **kwargs):

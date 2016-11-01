@@ -28,8 +28,8 @@ class ILPParser:
         self.reader = input_reader
         self.writer = output_writer
 
-        self.reader.set_parser(self)
-        self.writer.set_parser(self)
+        self.reader.set_converter(self)
+        self.writer.set_converter(self)
 
         self.inf_dom = False
 
@@ -48,11 +48,12 @@ class ILPParser:
             'constr_len': []
         }
 
-    def parse_input(self, input_file, offset=0):
+    def parse_input(self, input_file, **kwargs):
         self.reset()
-        self.reader.parse(input_file, offset=offset)
+        r = self.reader.parse(input_file, **kwargs)
         if 'stats' in self.options and self.options['stats']:
             self.print_stats()
+        return r
 
     def print_stats(self):
         max_digit = max(

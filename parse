@@ -4,12 +4,12 @@ import generic_parser.ILPParser as Parser
 from generic_parser.Readers.mps_reader import *
 from generic_parser.Readers.pisinger_reader import *
 from generic_parser.Readers.fzn_reader import FZNReader
-from generic_parser.Readers.inc_reader import IncReader
+from generic_parser.Readers.json_reader import JSONReader
 from generic_parser.Readers.lp_reader import LPReader
 from generic_parser.Writers.sugar_writer import *
 from generic_parser.Writers.aspartame_writer import *
 from generic_parser.Writers.casp_writer import *
-from generic_parser.Writers.inc_writer import *
+from generic_parser.Writers.json_writer import *
 from os.path import exists as file_exists
 import argparse
 import sys
@@ -19,14 +19,14 @@ readers = {
     "pisinger": PisingerReader,
     "fzn": FZNReader,
     "lp": LPReader,
-    "inc": IncReader
+    "json": JSONReader
 }
 
 writers = {
     "sugar": SugarWriter,
     "aspartame": AspartameWriter,
     "casp": CASPWriter,
-    "inc": IncWriter
+    "json": JSONWriter
 }
 
 opt_strategies = ["minimize", "maximize"]
@@ -34,7 +34,7 @@ opt_strategies = ["minimize", "maximize"]
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="This parser reads a specified file format and translates it into another one.")
+        description="This converter reads a specified file format and translates it into another one.")
     parser.add_argument("--reader", "-r", required=True, choices=readers.keys(), help="Specifies the reader to use")
     parser.add_argument("--writer", "-w", required=True, choices=writers.keys(), help="Specifies the writer to use")
     parser.add_argument("--out-dir", "-o", dest="outdir", default="-",
@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
             while not reader.EOF and instances_read < n_instances:
                 offset = reader.offset
-                if not _parser.parse_input(f, offset):
+                if not _parser.parse_input(f, offset=offset):
                     break
                 _parser.write_output(args.outdir)
                 instances_read += 1

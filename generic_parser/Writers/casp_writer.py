@@ -17,14 +17,14 @@ class CASPWriter(OutputWriter):
 
         self.output_file = file(output_filename + '.lp', 'w') if output_filename != sys.stdout else sys.stdout
 
-        if type(self.parser.instance_name) == str:
-            self.output_file.write('%%% ' + self.parser.instance_name + ' %%%\n')
+        if type(self.converter.instance_name) == str:
+            self.output_file.write('%%% ' + self.converter.instance_name + ' %%%\n')
 
         if 'csp' not in self.options or self.options['csp']:
             csp_path = self.options['csp'] if 'csp' in self.options else 'csp.lp'
             self.output_file.write("#include \"%s\".\n\n" % csp_path)
 
-        if self.parser.has_inf_bounds():
+        if self.converter.has_inf_bounds():
             self.output_file.write('has_inf_dom.\n\n')
 
         self.write_domains(variables_with_bounds, bool_vars)
@@ -90,7 +90,7 @@ class CASPWriter(OutputWriter):
         for var_list, b, rel in constraints:
             w_sum = self.get_weighted_sum(var_list)
 
-            self.output_file.write('&sum{ %s } %s %d.\n' % ("; ".join(w_sum), ">=" if rel == "ge" else "<=", b))
+            self.output_file.write('&sum{ %s } >= %d.\n' % ("; ".join(w_sum), b))
 
     def write_b2i(self, b2i):
         if b2i:
@@ -120,5 +120,8 @@ class CASPWriter(OutputWriter):
             self.output_file.write("\n&minimize{ %s }." % opt_term)
 
     def write_show(self, variables):
-        self.output_file.write('\n&show{ %s }.\n' % "; ".join(variables.keys()))
-        self.output_file.write('#show p/1.\n\n')
+        if "no-show" not in self.options or self.options["no-show"] is False:
+            self.output_file.write('\n&show{ %s }.\n' % "; ".join(variables.keys()))
+            self.output_file.write('#show p/1.\n\n')
+        else:
+            self.output_file.write('\n#show.\n')

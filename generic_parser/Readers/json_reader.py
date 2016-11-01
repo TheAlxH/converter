@@ -7,18 +7,18 @@ from ..domains.domain_by_enum import DomainByEnum
 from ..domains.domain_by_monotonic_function import DomainByMonotonicFunction
 
 
-class IncReader(InputReader):
+class JSONReader(InputReader):
     def __init__(self, **options):
-        super(IncReader, self).__init__(**options)
+        super(JSONReader, self).__init__(**options)
         self.options = options
         if 'lb' in options or 'ub' in options:
             sys.stderr.write('WARNING: overriding bounds is not supported in INC-reader\n')
 
-    def set_parser(self, parser):
-        super(IncReader, self).set_parser(parser)
+    def set_converter(self, converter):
+        super(JSONReader, self).set_converter(converter)
 
     def parse(self, input_file, **kwargs):
-        self.parser.set_instance_name(input_file)
+        self.converter.set_instance_name(input_file)
 
         def dummy_logger(*args, **kwargs):
             pass
@@ -32,14 +32,14 @@ class IncReader(InputReader):
                     sys.stderr.write('ERROR: overriding bounds is not supported in INC-reader\n')
                     sys.exit(1)
                 else:
-                    self.parser.variables[var] = dom
+                    self.converter.variables[var] = dom
         else:
-            self.parser.variables = domains
+            self.converter.variables = domains
 
-        self.parser.bool_variables = booleans
-        self.parser.clauses = clauses
-        self.parser.bool_to_int = bool2int
-        self.parser.opt = opt
+        self.converter.bool_variables = booleans
+        self.converter.clauses = clauses
+        self.converter.bool_to_int = bool2int
+        self.converter.opt = opt
 
         for c in constraints:
-            self.parser.add_ge_constraint(c.terms, c.b, c.reified)
+            self.converter.add_ge_constraint(c.terms, c.b, c.reified)

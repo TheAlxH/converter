@@ -3,9 +3,9 @@ import sys
 from OutputWriter import OutputWriter
 
 
-class IncWriter(OutputWriter):
+class JSONWriter(OutputWriter):
     def __init__(self, **options):
-        super(IncWriter, self).__init__(**options)
+        super(JSONWriter, self).__init__(**options)
         self.instance = {}
 
     def write(self, output, int_variables_with_bounds, bool_vars, opt_vector, constraints, clauses, b2i):

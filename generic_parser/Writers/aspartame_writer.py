@@ -17,7 +17,7 @@ class AspartameWriter(OutputWriter):
 
         self.output_file = open(output_filename + '.lp', 'w') if output_filename != sys.stdout else sys.stdout
 
-        self.output_file.write('%%% ' + self.parser.instance_name + ' %%%\n\n')
+        self.output_file.write('%%% ' + self.converter.instance_name + ' %%%\n\n')
 
         self.write_bool_variable(bool_vars, len(b2i) * 2)
         self.write_bounds(variables_with_bounds, opt_vector)

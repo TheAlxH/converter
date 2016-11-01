@@ -53,7 +53,7 @@ class FZNReader(InputReader):
 
         sub = subprocess.Popen([fzn_path, name], stdout=subprocess.PIPE, universal_newlines=True)
 
-        self.parser.set_instance_name(os.path.basename(os.path.splitext(file_name)[0]))
+        self.converter.set_instance_name(os.path.basename(os.path.splitext(file_name)[0]))
         self.parse_instance(sub.stdout)
 
         if input_file == sys.stdin:
@@ -96,14 +96,14 @@ class FZNReader(InputReader):
     def parse_variable(self, line, is_bool=False):
         if is_bool:
             var = line.strip()
-            self.var_table[var] = self.parser.new_bool_variable()
+            self.var_table[var] = self.converter.new_bool_variable()
         else:
             var = line.split()[0].strip()
             interval = re_int_interval.search(line)
             if interval is not None:
                 lb = int(interval.groups()[0])
                 ub = int(interval.groups()[1])
-                var_id = self.parser.new_int_variable(ContinuousDomain(lb, ub))
+                var_id = self.converter.new_int_variable(ContinuousDomain(lb, ub))
             else:
                 raise Exception("not implemented yet")  # TODO
 
@@ -127,7 +127,7 @@ class FZNReader(InputReader):
 
             new_terms.append((self.var_table[var], int(w)))
 
-        fn = getattr(self.parser, rel_map[rel])
+        fn = getattr(self.converter, rel_map[rel])
         if not translate_only:
             fn(new_terms, c)
         else:
@@ -141,12 +141,12 @@ class FZNReader(InputReader):
 
     def parse_optimization(self, line):
         strategy, var = line.strip().split()
-        self.parser.set_opt_strategy(strategy)
-        self.parser.add_to_opt_vector(self.var_table[var])
+        self.converter.set_opt_strategy(strategy)
+        self.converter.add_to_opt_vector(self.var_table[var])
 
     def parse_alldiff(self, line):
         variables = line.strip().split()
-        self.parser.add_alldiff_constraint(*[self.var_table[v] for v in variables])
+        self.converter.add_alldiff_constraint(*[self.var_table[v] for v in variables])
 
     def parse_disjunction(self, line):
         literals = set(line.strip().split())
@@ -154,14 +154,14 @@ class FZNReader(InputReader):
             return
         if '0' in literals:
             literals.remove('0')
-        self.parser.add_clause(*[self._get_bool_var(lit) for lit in literals])
+        self.converter.add_clause(*[self._get_bool_var(lit) for lit in literals])
 
     def parse_bool2int(self, line):
         b, i = line.strip().split()
         if b != '1' and b != '0':
             b = self.var_table[b]
 
-        self.parser.add_bool2int(b, self.var_table[i])
+        self.converter.add_bool2int(b, self.var_table[i])
 
     def _get_bool_var(self, b):
         if b[0] == '-':

@@ -70,21 +70,21 @@ class LPReader(InputReader):
         self.free_dom = ContinuousDomain(self.d_lb, self.d_ub)
         self.convert_float = 'convert_float' in options and options['convert_float'] is not False
 
-    def set_parser(self, parser):
-        super(LPReader, self).set_parser(parser)
+    def set_converter(self, converter):
+        super(LPReader, self).set_converter(converter)
         self.op_map = {
-            '=': self.parser.add_eq_constraint,
-            '!=': self.parser.add_ne_constraint,
-            '<': self.parser.add_le_constraint,
-            '>': self.parser.add_ge_constraint,
-            '<=': self.parser.add_le_constraint,
-            '>=': self.parser.add_ge_constraint,
-            '=<': self.parser.add_le_constraint,
-            '=>': self.parser.add_ge_constraint
+            '=': self.converter.add_eq_constraint,
+            '!=': self.converter.add_ne_constraint,
+            '<': self.converter.add_le_constraint,
+            '>': self.converter.add_ge_constraint,
+            '<=': self.converter.add_le_constraint,
+            '>=': self.converter.add_ge_constraint,
+            '=<': self.converter.add_le_constraint,
+            '=>': self.converter.add_ge_constraint
         }
 
     def parse(self, input_file, **kwargs):
-        self.parser.set_instance_name(input_file)
+        self.converter.set_instance_name(input_file)
 
         # TODO gzip
         if type(input_file) == str:
@@ -105,9 +105,9 @@ class LPReader(InputReader):
             for c in constraints:
                 op(*c)
 
-        for var, dom in self.parser.variables.items():
+        for var, dom in self.converter.variables.items():
             if dom.len() == INF:
-                self.parser.set_inf_bounds()
+                self.converter.set_inf_bounds()
                 break
 
     def parse_obj_section(self, kw):
@@ -115,7 +115,7 @@ class LPReader(InputReader):
         minus = False
 
         if kw.upper()[0:3] == 'MAX':
-            self.parser.set_opt_strategy('maximize')
+            self.converter.set_opt_strategy('maximize')
 
         for token in self.tokens:
             if token.typ == 'KEYWORD':
@@ -130,7 +130,7 @@ class LPReader(InputReader):
                 if n is None:
                     n = 1
                 var = self.get_var(token.value)
-                self.parser.add_to_opt_vector(var, n * (-1 if minus else 1))
+                self.converter.add_to_opt_vector(var, n * (-1 if minus else 1))
                 n = None
                 minus = False
 
@@ -184,7 +184,7 @@ class LPReader(InputReader):
         for token in self.tokens:
             if token.typ == 'KEYWORD':
                 var = self.var_table[var]
-                self.parser.variables[var] = ContinuousDomain(lb if lb is not None else 0,
+                self.converter.variables[var] = ContinuousDomain(lb if lb is not None else 0,
                                                               ub if ub is not None else self.d_ub)
                 self.dispatch_section(token.value)
                 return
@@ -192,7 +192,7 @@ class LPReader(InputReader):
             if token.line > line and var is not None:
                 var = self.var_table[var]
                 dom = ContinuousDomain(lb if lb is not None else 0, ub if ub is not None else self.d_ub)
-                self.parser.variables[var] = dom
+                self.converter.variables[var] = dom
                 lb = ub = var = None
 
             line = token.line
@@ -234,13 +234,13 @@ class LPReader(InputReader):
 
             if token.typ == 'ID':
                 var = self.get_var(token.value)
-                self.parser.variables[var] = dom
+                self.converter.variables[var] = dom
 
     def get_var(self, id):
         if id in self.var_table:
             return self.var_table[id]
         else:
-            self.var_table[id] = self.parser.new_int_variable(self.default_dom)
+            self.var_table[id] = self.converter.new_int_variable(self.default_dom)
             return self.var_table[id]
 
     def dispatch_section(self, section):
