@@ -1098,12 +1098,12 @@ namespace FlatZinc {
 
         for (const auto &i : ce[0]->getArray()->a) {
             if (!i->isBool()) {
-                std::cout << s.getBoolVariableUid(i->getBoolVar()) << " ";
+                std::cout << "b" << s.getBoolVariableUid(i->getBoolVar()) << " ";
             }
         }
         for (const auto &i : ce[1]->getArray()->a) {
             if (!i->isBool()) {
-                std::cout << -s.getBoolVariableUid(i->getBoolVar()) << " ";
+                std::cout << "-b" << s.getBoolVariableUid(i->getBoolVar()) << " ";
             }
         }
         std::cout << "\n";
