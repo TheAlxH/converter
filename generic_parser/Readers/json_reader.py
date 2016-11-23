@@ -39,7 +39,7 @@ class JSONReader(InputReader):
         self.converter.bool_variables = booleans
         self.converter.clauses = clauses
         self.converter.bool_to_int = bool2int
-        self.converter.opt = opt
+        self.converter.opt_vector = [(var, w) for var, w in opt.iteritems()]
 
         for c in constraints:
             self.converter.add_ge_constraint(c.terms, c.b, c.reified)

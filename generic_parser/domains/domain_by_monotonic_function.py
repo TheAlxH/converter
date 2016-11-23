@@ -19,6 +19,14 @@ class DomainByMonotonicFunction(Domain):
         if type(lb) != int:
             raise TypeError("lb must be of type int")
 
+    def copy(self, multiplier=1):
+        if multiplier * self.multiplier < 0:
+            lb, ub = self._ub, self._lb
+        return DomainByMonotonicFunction(lb, ub, self.fn, multiplier=multiplier)
+
+    def len(self):
+        return float("inf") if self.inf_bound else abs(self._ub - self._lb)
+
     def lb(self):
         return self.fn(self._lb) * self.multiplier
 

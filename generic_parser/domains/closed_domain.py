@@ -33,8 +33,6 @@ class ClosedDomain:
         """
         Searches and returns the minimal value v' that is greater equal to v.
         -1 is returned else.
-        :type v: int
-        :rtype: int
         """
         if v < self.values[0] or v > self.values[-1]:
             raise IndexError('element not found')
@@ -44,10 +42,6 @@ class ClosedDomain:
     def _bin_search_recursive(self, v, start, end):
         """
         Recursive helper function for DomainHistory.bin_search.
-        :type v: int
-        :type start: int
-        :type end: int
-        :rtype: int
         """
         if end < start:
             return start
@@ -77,8 +71,6 @@ class ClosedDomain:
     def find_prev(self, v):
         """
         Finds the predecessor of an element, if available.
-        :param v:
-        :rtype: int
         """
         if v - 1 < self.values[0] or v - 1 > self.values[-1]:
             raise IndexError('element not found')
@@ -92,17 +84,15 @@ class ClosedDomain:
 
     def has(self, v):
         """
-        :type v: int
-        :rtype: bool
+        Checks if the element v is in the value list
         """
         return v in self.values
 
     def index(self, v):
         """
-        :type v: int
-        :rtype: int
+        Searches the index in the value list where a new value would be inserted.
         """
-        return self._bin_search_recursive(v, 0, len(self.values) - 1)
+        return self._bin_search_recursive(v, 0, self.__len__() - 1)
 
     def __len__(self):
         return len(self.values)

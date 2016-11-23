@@ -183,9 +183,9 @@ class LPReader(InputReader):
 
         for token in self.tokens:
             if token.typ == 'KEYWORD':
-                var = self.var_table[var]
+                var = self.get_var(var)
                 self.converter.variables[var] = ContinuousDomain(lb if lb is not None else 0,
-                                                              ub if ub is not None else self.d_ub)
+                                                                 ub if ub is not None else self.d_ub)
                 self.dispatch_section(token.value)
                 return
 

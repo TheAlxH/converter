@@ -58,7 +58,7 @@ class CASPWriter(OutputWriter):
                 ub = 'inf' if ub == CASPWriter.INF else str(ub)
 
                 try:
-                    self.output_file.write('&dom{ %d..%s } = %s.\n' % (lb, ub, var))
+                    self.output_file.write('&dom{ %d .. %s } = %s.\n' % (lb, ub, var))
                 except TypeError:
                     sys.stderr.write('ERROR: infinity bounds not supported\n')
                     sys.stderr.write('ERROR: translation canceled\n')
