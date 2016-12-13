@@ -3,7 +3,7 @@ import re
 import sys
 
 from InputReader import InputReader
-from ..domains.continuous.continuous_domain import ContinuousDomain
+from ..domains.contiguous.contiguous_domain import ContiguousDomain
 
 
 class PisingerReader(InputReader):
@@ -58,7 +58,7 @@ class PisingerReader(InputReader):
 
     def define_variables(self, internal_representation):
         for var in range(0, len(internal_representation)):
-            self.var_table[var] = self.converter.new_int_variable(ContinuousDomain(0, 1))
+            self.var_table[var] = self.converter.new_int_variable(ContiguousDomain(0, 1))
 
     def parse_one_instance(self, f, offset=0):
         weights = []

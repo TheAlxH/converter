@@ -26,9 +26,6 @@ class DomainByEnum(Domain):
     def get_values_asc(self):
         return self.values
 
-    def dump_values(self):
-        return self.values
-
     def lb(self):
         return self.values[0]
 

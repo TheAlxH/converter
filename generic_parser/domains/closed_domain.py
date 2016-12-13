@@ -1,17 +1,25 @@
 from abc import ABCMeta
+from domain import Domain
 
 
-class ClosedDomain:
+class ClosedDomain(Domain):
     __metaclass__ = ABCMeta
 
-    def __init__(self, values):
+    def __init__(self, values, multiplier=1):
+        super(ClosedDomain, self).__init__(multiplier)
         self.values = values
+
+    def copy(self, multiplier=1):
+        return ClosedDomain(self.values, multiplier=multiplier)
 
     def lb(self):
         return self.values[0]
 
     def ub(self):
         return self.values[-1]
+
+    def get_values(self):
+        return self.values
 
     def get_values_asc(self, multiplier=1, start=0):
         if multiplier > 0:
@@ -97,6 +105,9 @@ class ClosedDomain:
     def __len__(self):
         return len(self.values)
 
+    def len(self):
+        return self.__len__()
+
     def __str__(self):
         if len(self.values) > 20:
             return str(self.values[0:5]) + " ... " + str(self.values[-5:]) + " # " + str(len(self.values))
@@ -104,3 +115,10 @@ class ClosedDomain:
 
     def __repr__(self):
         return self.__str__()
+
+    def export_self(self):
+        return self.__class__.__name__, [self.values]
+
+    @staticmethod
+    def import_self(*args):
+        return args[0](*args[1:])

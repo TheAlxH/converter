@@ -1,7 +1,7 @@
 import sys
 from OutputWriter import OutputWriter
 from .. import ILPParser
-from ..domains.continuous.continuous_domain import ContinuousDomain
+from ..domains.contiguous.contiguous_domain import ContiguousDomain
 
 
 class SugarWriter(OutputWriter):
@@ -105,7 +105,7 @@ class SugarWriter(OutputWriter):
                 dom = ILPParser.ILPParser.merge_dom(dom, d)
             self._write_domain('opt', dom)
         else:
-            self._write_domain('opt', ContinuousDomain(lb, ub))
+            self._write_domain('opt', ContiguousDomain(lb, ub))
 
     def write_objective_fn(self, opt_vector):
         if len(opt_vector) > 0:
@@ -115,7 +115,7 @@ class SugarWriter(OutputWriter):
             self.output_file.write('(objective minimize opt)\n')
 
     def _write_domain(self, var, domain):
-        if isinstance(domain, ContinuousDomain) and abs(domain.multiplier) == 1:
+        if isinstance(domain, ContiguousDomain) and abs(domain.multiplier) == 1:
             self.output_file.write('(int %s %d %d)\n' % (var, domain.lb(), domain.ub()))
         else:
-            self.output_file.write('(int %s (%s))\n' % (var, ' '.join(map(lambda x: '%s' % x, domain.dump_values()))))
+            self.output_file.write('(int %s (%s))\n' % (var, ' '.join(map(lambda x: '%s' % x, list(domain.get_values())))))

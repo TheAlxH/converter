@@ -1,34 +1,34 @@
-from continuous_domain_iterator import ContinuousDomainIterator
-from continuous_domain import ContinuousDomain
+from contiguous_domain_iterator import ContiguousDomainIterator
+from contiguous_domain import ContiguousDomain
 from ..inf_len_exception import InfLenException
 from ..inf_bound_exception import InfBoundException
 import math
 
 
-class SemiContinuousDomain(ContinuousDomain):
+class SemiContiguousDomain(ContiguousDomain):
     def __init__(self, lb, ub, multiplier=1):
-        super(SemiContinuousDomain, self).__init__(lb, ub, multiplier)
+        super(SemiContiguousDomain, self).__init__(lb, ub, multiplier)
         self._lb = lb
         self._ub = ub
-        self.inf_bound = self._lb == SemiContinuousDomain.INF_N or self._ub == SemiContinuousDomain.INF_P
+        self.inf_bound = self._lb == SemiContiguousDomain.INF_N or self._ub == SemiContiguousDomain.INF_P
 
     def copy(self, multiplier=1):
-        return SemiContinuousDomain(self._lb, self._ub, multiplier=multiplier)
+        return SemiContiguousDomain(self._lb, self._ub, multiplier=multiplier)
 
     def lb(self):
-        lb = super(SemiContinuousDomain, self).lb()
+        lb = super(SemiContiguousDomain, self).lb()
         return 0 if lb > 0 else lb
 
     def ub(self):
-        ub = super(SemiContinuousDomain, self).ub()
+        ub = super(SemiContiguousDomain, self).ub()
         return 0 if ub < 0 else ub
 
     def len(self):
-        return super(SemiContinuousDomain, self).len() + int(self._lb > 0 or self._ub < 0)
+        return super(SemiContiguousDomain, self).len() + int(self._lb > 0 or self._ub < 0)
 
     def __iter__(self):
-        if self._lb == ContinuousDomain.INF_N and self._ub == ContinuousDomain.INF_P:
-            return ContinuousDomainIterator(self, self.multiplier)
+        if self._lb == ContiguousDomain.INF_N and self._ub == ContiguousDomain.INF_P:
+            return ContiguousDomainIterator(self, self.multiplier)
         else:
             return self._value_generator()
 
@@ -61,7 +61,7 @@ class SemiContinuousDomain(ContinuousDomain):
 
             if self._lb > 0:
                 _item = slice(max(0, item.start - 1), max(0, item.stop - 1), 1)
-                spr = super(SemiContinuousDomain, self).__getitem__(_item)
+                spr = super(SemiContiguousDomain, self).__getitem__(_item)
                 return ([0] + spr) if item.start == 0 else spr
             elif self._ub < 0:
                 l = self.len()
@@ -70,27 +70,27 @@ class SemiContinuousDomain(ContinuousDomain):
                     return range(self._lb + item.start, self._lb + stop) + ([0] if item.stop >= l else [])
                 else:
                     _item = slice(max(0, item.start - 1), max(0, item.stop - 1), 1)
-                    spr = super(SemiContinuousDomain, self).__getitem__(_item)
+                    spr = super(SemiContiguousDomain, self).__getitem__(_item)
                     if len(spr) < stop - item.start:
                         return spr + [0]
                     else:
                         return spr
 
             else:
-                return super(SemiContinuousDomain, self).__getitem__(item)
+                return super(SemiContiguousDomain, self).__getitem__(item)
         else:
             if self._lb > 0:
-                v = 0 if item == 0 else super(SemiContinuousDomain, self).__getitem__(item - 1)
+                v = 0 if item == 0 else super(SemiContiguousDomain, self).__getitem__(item - 1)
                 if v > self._ub:
                     raise IndexError
                 else:
                     return v
             elif self._ub < 0 and not self.inf_bound:
-                return 0 if item == self.len() - 1 else super(SemiContinuousDomain, self).__getitem__(item)
+                return 0 if item == self.len() - 1 else super(SemiContiguousDomain, self).__getitem__(item)
             elif self._ub < 0:
-                return 0 if item == 0 else super(SemiContinuousDomain, self).__getitem__(item - 1)
+                return 0 if item == 0 else super(SemiContiguousDomain, self).__getitem__(item - 1)
             else:
-                return super(SemiContinuousDomain, self).__getitem__(item)
+                return super(SemiContiguousDomain, self).__getitem__(item)
 
     def get_values_asc(self):
         if self.has_open_bound():
@@ -99,20 +99,11 @@ class SemiContinuousDomain(ContinuousDomain):
             if self._lb > 0:
                 yield 0
 
-            for v in super(SemiContinuousDomain, self).get_values_asc():
+            for v in super(SemiContiguousDomain, self).get_values_asc():
                 yield v
 
             if self._ub < 0:
                 yield 0
-
-    def dump_values(self):
-        values = super(SemiContinuousDomain, self).dump_values()
-        if self._lb > 0:
-            return [0] + values
-        elif self._ub < 0:
-            return values + [0]
-        else:
-            return values
 
     @staticmethod
     def _fn(i):
@@ -123,7 +114,7 @@ class SemiContinuousDomain(ContinuousDomain):
 
     @staticmethod
     def import_self(lb, ub, multiplier):
-        return SemiContinuousDomain(lb, ub, multiplier=multiplier)
+        return SemiContiguousDomain(lb, ub, multiplier=multiplier)
 
     def __str__(self):
         if not self.inf_bound:

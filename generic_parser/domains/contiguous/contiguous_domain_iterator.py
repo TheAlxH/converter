@@ -1,6 +1,6 @@
-class ContinuousDomainIterator:
+class ContiguousDomainIterator:
     """
-    :type dom: ContinuousDomain
+    :type dom: ContiguousDomain
     """
     def __init__(self, dom, multiplier):
         self.dom = dom

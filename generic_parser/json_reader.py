@@ -3,7 +3,7 @@ import gzip
 import sys
 from time import time
 from order_encoding.constraint import Constraint
-from domains.continuous.continuous_domain import ContinuousDomain
+from domains.contiguous.contiguous_domain import ContiguousDomain
 from domains.domain_by_enum import DomainByEnum
 from domains.domain_by_monotonic_function import DomainByMonotonicFunction
 

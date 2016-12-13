@@ -4,18 +4,18 @@ from ..inf_bound_exception import InfBoundException
 import math
 
 
-class ContinuousDomain(Domain):
+class ContiguousDomain(Domain):
     INF_P = float('inf')
     INF_N = -float('inf')
 
     def __init__(self, lb, ub, multiplier=1):
-        super(ContinuousDomain, self).__init__(multiplier)
+        super(ContiguousDomain, self).__init__(multiplier)
         self._lb = lb
         self._ub = ub
-        self.inf_bound = self._lb == ContinuousDomain.INF_N or self._ub == ContinuousDomain.INF_P
+        self.inf_bound = self._lb == ContiguousDomain.INF_N or self._ub == ContiguousDomain.INF_P
 
     def copy(self, multiplier=1):
-        return ContinuousDomain(self._lb, self._ub, multiplier=multiplier * self.multiplier)
+        return ContiguousDomain(self._lb, self._ub, multiplier=multiplier * self.multiplier)
 
     def lb(self):
         return self.multiplier * self._lb if self.multiplier > 0 else self.multiplier * self._ub
@@ -24,18 +24,18 @@ class ContinuousDomain(Domain):
         return self.multiplier * self._lb if self.multiplier < 0 else self.multiplier * self._ub
 
     def len(self):
-        return ContinuousDomain.INF_P if self.inf_bound else self._ub - self._lb + 1
+        return ContiguousDomain.INF_P if self.inf_bound else self._ub - self._lb + 1
 
     def __iter__(self):
         lb, ub = self.lb(), self.ub()
 
-        if not self.inf_bound or lb != ContinuousDomain.INF_N:
+        if not self.inf_bound or lb != ContiguousDomain.INF_N:
             # ascending
             t, m = lb, abs(self.multiplier)
             while t <= ub:
                 yield t
                 t += m
-        elif ub != ContinuousDomain.INF_P:
+        elif ub != ContiguousDomain.INF_P:
             # descending
             t, m = ub, -abs(self.multiplier)
             while True:
@@ -58,9 +58,9 @@ class ContinuousDomain(Domain):
             if item.start < 0 or item.stop < 0:
                 raise IndexError('reverse traversal is not supported')
 
-            if self._lb == ContinuousDomain.INF_N and self._ub == ContinuousDomain.INF_P:
-                return sorted([self.multiplier * ContinuousDomain._fn(i) for i in xrange(item.start, item.stop)])
-            elif self._lb == ContinuousDomain.INF_N:
+            if self._lb == ContiguousDomain.INF_N and self._ub == ContiguousDomain.INF_P:
+                return sorted([self.multiplier * ContiguousDomain._fn(i) for i in xrange(item.start, item.stop)])
+            elif self._lb == ContiguousDomain.INF_N:
                 return [self.multiplier * i for i in xrange(self._ub - item.stop + 1, self._ub - item.start + 1)]
             else:
                 if not self.inf_bound and item.start > self.__len__() - 1:
@@ -73,9 +73,9 @@ class ContinuousDomain(Domain):
                 raise IndexError('reverse traversal is not supported')
 
             if self.inf_bound or item < self.__len__():
-                if self._lb == ContinuousDomain.INF_N and self._ub == ContinuousDomain.INF_P:
+                if self._lb == ContiguousDomain.INF_N and self._ub == ContiguousDomain.INF_P:
                     return self.multiplier * int(math.ceil(item / 2.0)) * (-1 if item & 1 == 0 else 1)
-                elif self._lb == ContinuousDomain.INF_N:
+                elif self._lb == ContiguousDomain.INF_N:
                     return self.multiplier * (self._ub - item)
                 else:
                     return self.multiplier * (self._lb + item)
@@ -96,11 +96,6 @@ class ContinuousDomain(Domain):
                 for i in reversed(xrange(self._lb, self._ub + 1)):
                     yield self.multiplier * i
 
-    def dump_values(self):
-        if self.inf_bound:
-            raise InfBoundException('values of open domains can\'t be dumped')
-        return [i for i in self.get_values_asc()]
-
     @staticmethod
     def _fn(i):
         return (i + 1) / 2 * (1 if i & 1 == 0 else -1)
@@ -110,7 +105,7 @@ class ContinuousDomain(Domain):
 
     @staticmethod
     def import_self(lb, ub, multiplier):
-        return ContinuousDomain(lb, ub, multiplier=multiplier)
+        return ContiguousDomain(lb, ub, multiplier=multiplier)
 
     def __str__(self):
         if not self.inf_bound:

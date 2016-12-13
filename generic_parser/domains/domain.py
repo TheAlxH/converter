@@ -28,27 +28,11 @@ class Domain:
         pass
 
     @abstractmethod
-    def __len__(self):
-        pass
-
-    @abstractmethod
     def get_values(self):
-        """
-        Must return an iterable and sliceable object.
-        :rtype: list[int]
-        """
         pass
 
     @abstractmethod
     def get_values_asc(self):
-        """
-        Typically used for static domains.
-        :rtype: collections.Iterable[int]
-        """
-        pass
-
-    @abstractmethod
-    def dump_values(self):
         pass
 
     @abstractmethod

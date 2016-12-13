@@ -39,7 +39,7 @@ class JSONWriter(OutputWriter):
 
     def write_bounds(self, bounds):
         """
-        :type bounds: dict[str, ContinuousDomain]
+        :type bounds: dict[str, ContiguousDomain]
         """
         # TODO all domain classes!!!
         self.instance['bounds'] = {var: dom.export_self() for var, dom in bounds.items()}

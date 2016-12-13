@@ -1,7 +1,7 @@
 import sys
 from OutputWriter import OutputWriter
 from .. import ILPParser
-from ..domains.continuous.continuous_domain import ContinuousDomain
+from ..domains.contiguous.contiguous_domain import ContiguousDomain
 
 
 class CASPWriter(OutputWriter):
@@ -36,7 +36,7 @@ class CASPWriter(OutputWriter):
         self.write_show(variables_with_bounds)
         self.output_file.write('\n')
 
-    # TODO handle non-continuous domains
+    # TODO handle non-contiguous domains
     def write_domains(self, bounds, booleans):
         if booleans:
             self.output_file.write('% BOOLS\n')
@@ -50,7 +50,7 @@ class CASPWriter(OutputWriter):
             dom = bounds[var]
             lb, ub = dom.lb(), dom.ub()
 
-            if (not isinstance(dom, ContinuousDomain) or abs(
+            if (not isinstance(dom, ContiguousDomain) or abs(
                     dom.multiplier) > 1) and not dom.has_open_bound() or dom.len() == 1:
                 values = map(str, dom.get_values_asc())
                 self.output_file.write('&dom{ %s } = %s.\n' % ('; '.join(values), var))

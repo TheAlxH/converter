@@ -5,7 +5,7 @@ from math import log10, ceil
 
 from Readers import InputReader
 from Writers import OutputWriter
-from domains.continuous.continuous_domain import ContinuousDomain
+from domains.contiguous.contiguous_domain import ContiguousDomain
 from domains.domain import *
 from domains.domain_by_enum import DomainByEnum
 from domains.domain_by_monotonic_function import DomainByMonotonicFunction
@@ -284,30 +284,20 @@ class ILPParser:
     def merge_dom(dom1, dom2):
         domains = [dom1, dom2]
         domain_classes = {dom1.__class__, dom2.__class__}
-        cont_dom_multiplier = abs(dom1.multiplier * dom2.multiplier)
-        domain_open_bounds = dom1.has_open_bound() or dom2.has_open_bound()
-        cont_dom_open_b = sum([d.has_open_bound() for d in [dom1, dom2] if isinstance(d, ContinuousDomain)]) > 0
-        simple_cont_dom_open_b = sum([d.has_open_bound() and abs(d.multiplier) == 1 for d in [dom1, dom2] if
-                                      isinstance(d, ContinuousDomain)]) > 0
+        open_bounds = dom1.has_open_bound() or dom2.has_open_bound()
 
-        if ContinuousDomain in domain_classes and cont_dom_multiplier == 1 and (
-                        len(domain_classes) == 1 or cont_dom_open_b) and simple_cont_dom_open_b \
-                or dom1.len() * dom2.len() > 10000:
-            # only ContinuousDomain instances or at least on unbounded ContinuousDomain instance
-            lb = sum([d.lb() for d in domains])
-            ub = sum([d.ub() for d in domains])
-            return ContinuousDomain(lb, ub)
-        elif not domain_open_bounds:
+        if not open_bounds and dom1.len() * dom2.len() <= 10000 and domain_classes != {ContiguousDomain}:
             # closed and enumerable domains are merged by computing all combinations
             dom = sorted(ILPParser._recursive_dom_merge(domains))
             if abs(dom[-1] - dom[0]) == len(dom) - 1:
-                # detect and prefer a continuous domain
-                return ContinuousDomain(dom[0], dom[-1])
+                # detect and prefer a contiguous domain
+                return ContiguousDomain(dom[0], dom[-1])
             else:
                 return DomainByEnum(dom)
         else:
-            sys.stderr.write("open domains can not be merged, yet\n")
-            sys.exit(1)
+            lb = sum([d.lb() for d in domains])
+            ub = sum([d.ub() for d in domains])
+            return ContiguousDomain(lb, ub)
 
     @staticmethod
     def _recursive_dom_merge(domains, index=0):
@@ -327,7 +317,7 @@ class ILPParser:
             return DomainByEnum(domain.get_values(), multiplier=w)
         elif isinstance(domain, DomainByMonotonicFunction):
             return DomainByMonotonicFunction(domain.lb(), domain.ub(), domain.fn, multiplier=w)
-        elif isinstance(domain, ContinuousDomain):
-            return ContinuousDomain(domain.lb(), domain.ub(), multiplier=w)
+        elif isinstance(domain, ContiguousDomain):
+            return ContiguousDomain(domain.lb(), domain.ub(), multiplier=w)
         else:
             raise TypeError("Domain class not supported")

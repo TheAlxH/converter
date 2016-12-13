@@ -59,11 +59,6 @@ class DomainByMonotonicFunction(Domain):
             raise Exception('values of open domains can\'t be provided in ascending order')
         return self
 
-    def dump_values(self):
-        if self.inf_bound:
-            raise Exception('values of open domains can\'t be dumped')
-        return [i for i in self.get_values_asc()]
-
     def __len__(self):
         if self.inf_bound:
             raise InfLenException

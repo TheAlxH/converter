@@ -1,7 +1,7 @@
 import sys
 from OutputWriter import OutputWriter
 from .. import ILPParser
-from ..domains.continuous.continuous_domain import ContinuousDomain
+from ..domains.contiguous.contiguous_domain import ContiguousDomain
 
 
 class AspartameWriter(OutputWriter):
@@ -40,7 +40,7 @@ class AspartameWriter(OutputWriter):
 
             self.output_file.write('\n')
 
-    # TODO handle non-continuous domains
+    # TODO handle non-contiguous domains
     def write_bounds(self, domains, opt_vector):
         self.output_file.write('% BOUNDS\n')
 
@@ -82,7 +82,7 @@ class AspartameWriter(OutputWriter):
                 dom = ILPParser.ILPParser.merge_dom(dom, d)
             self._write_domain('opt', dom)
         else:
-            self._write_domain('opt', ContinuousDomain(lb, ub))
+            self._write_domain('opt', ContiguousDomain(lb, ub))
 
     def write_clauses(self, clauses):
         if clauses:
@@ -169,7 +169,7 @@ class AspartameWriter(OutputWriter):
             self.constraint_id += 2
 
     def _write_domain(self, var, domain):
-        if isinstance(domain, ContinuousDomain) and abs(domain.multiplier) == 1:
+        if isinstance(domain, ContiguousDomain) and abs(domain.multiplier) == 1:
             self.output_file.write('var(int, "%s", (range(%d, %d))).\n' % (var, domain.lb(), domain.ub()))
         else:
             for d in domain.get_values_asc():

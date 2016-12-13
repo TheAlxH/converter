@@ -3,7 +3,7 @@ import re
 import sys
 
 from InputReader import InputReader
-from ..domains.continuous.continuous_domain import ContinuousDomain
+from ..domains.contiguous.contiguous_domain import ContiguousDomain
 
 keywords_max = ['MAXIMIZE', 'MAXIMUM', 'MAX']
 keywords_min = ['MINIMIZE', 'MINIMUM', 'MIN']
@@ -66,8 +66,8 @@ class LPReader(InputReader):
         # default domain
         self.d_lb = -float('inf') if 'lb' not in options else options['lb']
         self.d_ub = float('inf') if 'ub' not in options else options['ub']
-        self.default_dom = ContinuousDomain(0, self.d_ub)
-        self.free_dom = ContinuousDomain(self.d_lb, self.d_ub)
+        self.default_dom = ContiguousDomain(0, self.d_ub)
+        self.free_dom = ContiguousDomain(self.d_lb, self.d_ub)
         self.convert_float = 'convert_float' in options and options['convert_float'] is not False
 
     def set_converter(self, converter):
@@ -184,14 +184,14 @@ class LPReader(InputReader):
         for token in self.tokens:
             if token.typ == 'KEYWORD':
                 var = self.get_var(var)
-                self.converter.variables[var] = ContinuousDomain(lb if lb is not None else 0,
+                self.converter.variables[var] = ContiguousDomain(lb if lb is not None else 0,
                                                                  ub if ub is not None else self.d_ub)
                 self.dispatch_section(token.value)
                 return
 
             if token.line > line and var is not None:
                 var = self.var_table[var]
-                dom = ContinuousDomain(lb if lb is not None else 0, ub if ub is not None else self.d_ub)
+                dom = ContiguousDomain(lb if lb is not None else 0, ub if ub is not None else self.d_ub)
                 self.converter.variables[var] = dom
                 lb = ub = var = None
 
@@ -221,7 +221,7 @@ class LPReader(InputReader):
 
     def parse_binaries_section(self, kw):
         if kw.upper()[0:3] == 'BIN':
-            dom = ContinuousDomain(0, 1)
+            dom = ContiguousDomain(0, 1)
         elif kw.upper()[0:3] == 'GEN':
             dom = self.free_dom
         else:

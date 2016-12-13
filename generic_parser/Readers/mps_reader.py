@@ -1,5 +1,5 @@
 from InputReader import InputReader
-from ..domains.continuous.continuous_domain import ContinuousDomain
+from ..domains.contiguous.contiguous_domain import ContiguousDomain
 from ..vendor.mps_parser import Parser as MPSParser
 
 
@@ -42,7 +42,7 @@ class MPSReader(InputReader):
                 if ub == self.INF:
                     self.converter.set_inf_bounds()
 
-            self.var_table[var] = self.converter.new_int_variable(ContinuousDomain(lb, ub))
+            self.var_table[var] = self.converter.new_int_variable(ContiguousDomain(lb, ub))
 
     def get_constraints(self, constraints, relations, b_vector):
         for constraint_id, weighted_vars in constraints.iteritems():

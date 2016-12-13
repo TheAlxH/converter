@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 
 from InputReader import InputReader
-from ..domains.continuous.continuous_domain import ContinuousDomain
+from ..domains.contiguous.contiguous_domain import ContiguousDomain
 
 re_int_interval = re.compile('\[(-?\d+)\.\.(-?\d+)\]')
 re_constraint_split = re.compile('^([^!=<>]+)(!=|=|>=|<=|>|<)(.+)$')
@@ -103,7 +103,7 @@ class FZNReader(InputReader):
             if interval is not None:
                 lb = int(interval.groups()[0])
                 ub = int(interval.groups()[1])
-                var_id = self.converter.new_int_variable(ContinuousDomain(lb, ub))
+                var_id = self.converter.new_int_variable(ContiguousDomain(lb, ub))
             else:
                 raise Exception("not implemented yet")  # TODO
 
