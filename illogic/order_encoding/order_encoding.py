@@ -1,12 +1,23 @@
 import math
 
-from incremental_grounding.domain_chunk import DomainChunk
+from ..incremental_grounding.domain_chunk import DomainChunk
+from early_exit_exception import EarlyExitException
 from view import SignedView
+from datetime import datetime
+
+stats = {
+    "call": 0,
+    "a>0": 0,
+    "a<0": 0,
+    "for": 0,
+    "trans": 0,
+    "trans_count": 0
+}
 
 
 class OrderEncoding:
     def __init__(self, dom, lb_g, ub_g, do_translate=True, no_extrema=False, raw_output=False,
-                 debugging=False, logger=None):
+                 debugging=False, logger=None, infeasible_detection=True):
         self.lb_g = lb_g
         self.ub_g = ub_g
         self.dom = dom
@@ -16,7 +27,10 @@ class OrderEncoding:
         self.debugging = debugging
         self.raw_output = raw_output
 
-        self.log = logger if logger is not None else self._log
+        self.log = logger if logger is not None else self._nop
+
+        if not infeasible_detection:
+            self.detect_infeasibility = self._nop
 
     def ub(self, view):
         var, w = view
@@ -26,10 +40,26 @@ class OrderEncoding:
         var, w = view
         return self.lb_g[var] * w if w > 0 else self.ub_g[var] * w
 
-    def _log(self, *args, **kwargs):
+    def _nop(self, *args, **kwargs):
         pass
 
+    def detect_infeasibility(self, constraint, dom_override=None):
+        """
+        Detects infeasible constraints at results in an early termination.
+        """
+        if not constraint.reified and sum([self.ub(v) for v in constraint.terms]) < constraint.b:
+            # self.log("early exit", constraint, type="OE")
+            raise EarlyExitException
+
     def encode(self, constraint, dom_override=None):
+        # self.log("encode", constraint, type="OE", lvl=2)
+
+        self.detect_infeasibility(constraint, dom_override=dom_override)
+
+        # if len(constraint.terms) in stats:
+        #     stats[len(constraint.terms)] += 1
+        # else:
+        #     stats[len(constraint.terms)] = 1
         return self._encode((constraint.terms, constraint.b), dom_override=dom_override, reified=constraint.reified)
 
     def _encode(self, constraint, dom_override=None, reified=None):
@@ -47,37 +77,47 @@ class OrderEncoding:
         if dom_override is None:
             dom_override = {}
 
-        skip_counter = 0
+        # skip_counter = 0
+
+        # stats["call"] += 1
 
         if len(views) == 1 and a > 0:
+            # d_pre_trans = datetime.now()
             clause = [self.translate((False, var, int(math.ceil(float(c) / a))))]
+            # d_trans = datetime.now() - d_pre_trans
+            # stats["trans"] += d_trans.total_seconds()
+            # stats["trans_count"] += 1
             if reified is not None:
                 clause.append(reified)
             return [clause]
         elif len(views) == 1 and a < 0:
+            # d_pre_trans = datetime.now()
             clause = [self.translate((True, var, c / a + 1))]
+            # d_trans = datetime.now() - d_pre_trans
+            # stats["trans"] += d_trans.total_seconds()
+            # stats["trans_count"] += 1
             if reified is not None:
                 clause.append(reified)
             return [clause]
         elif a > 0:
+            # stats["a>0"] += 1
             # n >= 2, a > 0
             conjunction = []
             dom = (self.dom[var] if var not in dom_override else dom_override[var])
 
-            # skip redundant clauses by computing an alternative start index
-            t = (c - sum([self.ub(v) for v in views[1:]])) / a
+            # compute the starting point in Dom(var)
+            t = (c - sum([self.ub(v) for v in views[1:]])) / a  # minimum value required to satisfy the constraint
             d_start = max(dom.index(t) - 1, 0)
-            # self.log("start: %d%s =>" % (a, var), "[%d] =" % d_start, dom.values[d_start], type="oe", lvl=2)
 
             for d in dom.get_values_asc(start=d_start):
+                # stats["for"] += 1
                 sub_sum = (views[1:], c - a * d)
 
                 # check whether to exit the loop earlier
                 ubs = [self.lb(v) for v in views[1:]]
                 if a * d + sum(ubs) >= c:
-                    self.log("skip:", var, a, d, ubs, c, "|", len(dom) - skip_counter, "skipped", type="oe", lvl=2)
                     break
-                skip_counter += 1
+                # skip_counter += 1
 
                 sub_enc = self._encode(sub_sum, dom_override=dom_override, reified=reified)
 
@@ -87,25 +127,25 @@ class OrderEncoding:
                 conjunction.extend(ll)
             return conjunction
         else:
+            # stats["a<0"] += 1
             # n >= 2, a < 0
             conjunction = []
             dom = (self.dom[var] if var not in dom_override else dom_override[var])
 
-            # skip redundant clauses by computing an alternative start index
+            # compute the starting point in Dom(var)
             t = int((c - sum([self.ub(v) for v in views[1:]])) / a)  # truncate
             idx = -1 if t < dom.lb() else dom.index(t)
             d_start = max(0, len(dom) - (idx + 1) - 1)
-            # self.log("start: %d%s =>" % (a, var), "[%d] =" % d_start, dom.values[d_start], type="oe", lvl=2)
 
             for d in dom.get_values_desc(start=d_start):
+                # stats["for"] += 1
                 sub_sum = (views[1:], c - a * d)
 
                 # check whether to exit the loop earlier
                 ubs = [self.lb(v) for v in views[1:]]
                 if a * d + sum(ubs) >= c:
-                    self.log("skip:", var, a, d, ubs, c, "|", len(dom) - skip_counter, "skipped", type="oe", lvl=2)
                     break
-                skip_counter += 1
+                # skip_counter += 1
 
                 sub_enc = self._encode(sub_sum, dom_override=dom_override, reified=reified)
 

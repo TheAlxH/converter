@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-import generic_parser.ILPParser as Parser
-from generic_parser.Readers.mps_reader import *
-from generic_parser.Readers.pisinger_reader import *
-from generic_parser.Readers.fzn_reader import FZNReader
-from generic_parser.Readers.json_reader import JSONReader
-from generic_parser.Readers.lp_reader import LPReader
-from generic_parser.Writers.sugar_writer import *
-from generic_parser.Writers.aspartame_writer import *
-from generic_parser.Writers.casp_writer import *
-from generic_parser.Writers.json_writer import *
+import illogic.ILPParser as Parser
+from illogic.Readers.mps_reader import *
+from illogic.Readers.pisinger_reader import *
+from illogic.Readers.fzn_reader import FZNReader
+from illogic.Readers.json_reader import JSONReader
+from illogic.Readers.lp_reader import LPReader
+from illogic.Writers.sugar_writer import *
+from illogic.Writers.aspartame_writer import *
+from illogic.Writers.casp_writer import *
+from illogic.Writers.json_writer import *
 from os.path import exists as file_exists
 import argparse
 import sys

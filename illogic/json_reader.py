@@ -2,10 +2,11 @@ import json
 import gzip
 import sys
 from time import time
-from order_encoding.constraint import Constraint
-from domains.contiguous.contiguous_domain import ContiguousDomain
-from domains.domain_by_enum import DomainByEnum
-from domains.domain_by_monotonic_function import DomainByMonotonicFunction
+from illogic.order_encoding.constraint import Constraint
+from illogic.domains.contiguous.contiguous_domain import ContiguousDomain
+from illogic.domains.contiguous.contiguous_domain import ContiguousDomain as ContinuousDomain
+from illogic.domains.domain_by_enum import DomainByEnum
+from illogic.domains.domain_by_monotonic_function import DomainByMonotonicFunction
 
 
 def read(file_path, logger, t_start=None):
@@ -50,7 +51,7 @@ def read(file_path, logger, t_start=None):
     instance['constraints'] = map(lambda c: tuple(c), instance['constraints'])
     raw_constraints = []
     for cc in instance['constraints']:
-        c = (map(lambda x: (str(x[0]), x[1]), cc[0]), cc[1], str(cc[2]) if cc[2] is not None else None)
+        c = (map(lambda x: (str(x[0]), x[1]), cc[0]), cc[1], (str(cc[2][0]), cc[2][1]) if cc[2] is not None else None)
         raw_constraints.append(c)
     for terms, b, r in raw_constraints:
         constraints.append(Constraint([tuple(term) for term in terms], b, reified=r))

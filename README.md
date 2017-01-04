@@ -84,7 +84,7 @@ Currently Supported Readers and Writers
 |-------------------------|:---:|:---:|:--------:|:---:|
 | `stdin`                 | ✓   | ✓   | ✓        | ✓   |
 | gzip support            | ✓   | ✗   | ✓        | ✗   |
-| non-continuous domains | ✓   | ✓   | (✓)      | ✗   |
+| discontiguous domains   | ✓   | ✓   | (✓)      | ✗   |
 
 (✓) all domains in pisinger instances have the domain 0, 1.
 

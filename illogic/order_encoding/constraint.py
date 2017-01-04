@@ -7,6 +7,7 @@ class Constraint:
         self.b = b
         self.touched = False
         self.is_reified_copy = False
+        self.vars = {t[0] for t in self.terms}
         if type(reified) == str:
             self.reified = (reified, True)
         else:
@@ -19,6 +20,9 @@ class Constraint:
 
     def get_terms(self):
         return {var: weight for var, weight in self.terms}
+
+    def has_var(self, var):
+        return var in self.vars
 
     def __str__(self):
         return ('%s >= %d' % (str(self.terms), self.b)) \

@@ -139,24 +139,6 @@ class ILPParser:
         else:
             raise Exception("unknown optimization strategy")
 
-    def _constraint_split_eq(self, terms):
-        if len(terms) == 2:
-            # FIXME currently only: x+y but need: 2x - 6y
-            dom1 = ILPParser.term_domain(self.variables[terms[0][0]], terms[0][1])
-            dom2 = ILPParser.term_domain(self.variables[terms[1][0]], terms[1][1])
-            new_dom = ILPParser.merge_dom(dom1, dom2)
-            s0 = self.new_int_variable(new_dom, internal=True)
-            self.add_eq_constraint([(s0, 1)] + ILPParser.inverse_terms(terms), 0)
-            return s0
-        else:
-            s2 = self._constraint_split_eq(terms[1:])
-            var, w = terms[0]
-            dom = ILPParser.term_domain(self.variables[var], w)
-            new_dom = ILPParser.merge_dom(dom, self.variables[s2])
-            s1 = self.new_int_variable(new_dom, internal=True)
-            self.add_eq_constraint([(s1, 1), (var, -w), (s2, -1)], 0)
-            return s1
-
     def _constraint_split_le(self, terms, b, reified=None):
         dom = self.variables[terms[0][0]]
         dom = dom.copy(multiplier=terms[0][1])
@@ -174,13 +156,22 @@ class ILPParser:
 
         self.add_ge_constraint([(s, 1)], b, split=False, reified_var=reified)
 
+    def _constraint_split_eq(self, terms, b, reified=None):
+        if len(terms) > 3:
+            dom1 = ILPParser.term_domain(self.variables[terms[-2][0]], terms[-2][1])
+            dom2 = ILPParser.term_domain(self.variables[terms[-1][0]], terms[-1][1])
+            new_dom = ILPParser.merge_dom(dom1, dom2)
+            s = self.new_int_variable(new_dom, internal=True)
+            self.add_eq_constraint(terms[-2:] + [(s, -1)], 0)
+            self._constraint_split_eq(terms[:-2] + [(s, 1)], b, reified=reified)
+        else:
+            self.add_ge_constraint(terms, b, reified_var=reified)
+
     def add_ge_constraint(self, terms, b, reified_var=None, split=True):
         self._check_variables(terms)
 
         if len(terms) > 3 and split and "split" in self.options and self.options["split"] == 1:
-            # first step
-            s = self._constraint_split_eq(terms[2:])
-            self.add_ge_constraint(terms[:2] + [(s, 1)], b, reified_var=reified_var)
+            self._constraint_split_eq(terms, b, reified=reified_var)
         elif len(terms) > 3 and split and "split" in self.options and self.options["split"] == 2:
             self._constraint_split_le(terms, b, reified=reified_var)
         else:
